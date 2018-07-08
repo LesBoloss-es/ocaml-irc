@@ -1,6 +1,3 @@
-
 (library
  ((name irc_utils)
-  (public_name irc.utils)
-  (inline_tests)
-  (preprocess (pps (ppx_inline_test)))))
+  (public_name irc.utils)))

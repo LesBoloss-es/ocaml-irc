@@ -1,0 +1,4 @@
+(library
+ ((name irc)
+  (public_name irc)
+  (libraries (irc.utils irc.model irc.client))))

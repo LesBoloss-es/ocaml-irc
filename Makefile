@@ -1,4 +1,4 @@
-.PHONY: build doc install uninstall test clean
+.PHONY: build doc examples install uninstall test clean
 
 build:
 	jbuilder build @install
@@ -7,6 +7,12 @@ build:
 doc:
 	jbuilder build @doc
 	rm -f doc && ln -sf _build/default/_doc/_html
+
+examples:
+	jbuilder build @examples
+	mkdir -p bin \
+	    && cd bin \
+	    && find ../_build/default/examples/ -name '*.exe' -exec ln -sf '{}' . ';'
 
 install:
 	jbuilder install
@@ -19,4 +25,5 @@ test:
 
 clean:
 	jbuilder clean
-	rm -f bin lib doc
+	rm -f lib doc
+	rm -rf bin

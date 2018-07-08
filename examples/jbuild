@@ -1,0 +1,7 @@
+(alias
+ ((name examples)
+  (deps (mirror.exe))))
+
+(executable
+ ((name mirror)
+  (libraries (irc))))
