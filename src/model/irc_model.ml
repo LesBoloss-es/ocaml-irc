@@ -6,3 +6,4 @@ module Message = Message
 module Misc = Misc
 module Nickname = Nickname
 module Reply = Reply
+module Target = Target

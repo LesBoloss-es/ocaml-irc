@@ -6,7 +6,7 @@ build:
 
 doc:
 	jbuilder build @doc
-	rm -f doc && ln -sf _build/default/_doc/_html
+	rm -f doc && ln -sf _build/default/_doc/_html doc
 
 examples:
 	jbuilder build @examples

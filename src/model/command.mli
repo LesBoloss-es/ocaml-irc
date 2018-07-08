@@ -6,10 +6,6 @@ type service = string
 type server = string
 type keyed_channel = Channel.t * Channel.key option
 
-type target =
-  | Channel of Channel.t
-  | Nickname of Nickname.t
-
 type t =
   (* These commands are taken from RFC 2812 *)
 
@@ -35,7 +31,7 @@ type t =
   | Kick of string * string * string option
 
   (* 3.3 Sending messages *)
-  | Privmsg of target * string
+  | Privmsg of Target.t * string
   | Notice of string * string
 
   (* 3.4 Server queries and commands *)
@@ -71,7 +67,6 @@ type t =
   (* 5.2 Error replies *)
   | Err of Error.t
 
-val pp_print_target : Format.formatter -> target -> unit
 val pp_print : Format.formatter -> t -> unit
 
 val from_strings : string -> string list -> t

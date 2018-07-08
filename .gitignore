@@ -6,6 +6,7 @@
 ## Dune
 /_build
 .merlin
+/*.install
 
 ## Project
 /bin

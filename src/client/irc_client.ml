@@ -1,7 +1,4 @@
+module Server = Server
 
-class generic_client = object (self)
-
-  method start () : unit =
-    assert false
-
-end
+class skeleton = Skeleton.m
+class generic = Generic.m

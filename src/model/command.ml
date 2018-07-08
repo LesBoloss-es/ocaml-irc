@@ -6,10 +6,6 @@ type service = string
 type server = string
 type keyed_channel = Channel.t * Channel.key option
 
-type target =
-  | Channel of Channel.t
-  | Nickname of Nickname.t
-
 type t =
   (* These commands are taken from RFC 2812 *)
 
@@ -35,7 +31,7 @@ type t =
   | Kick of string * string * string option
 
   (* 3.3 Sending messages *)
-  | Privmsg of target * string
+  | Privmsg of Target.t * string
   | Notice of string * string
 
   (* 3.4 Server queries and commands *)
@@ -72,10 +68,6 @@ type t =
   | Err of Error.t
 
 let fpf = Format.fprintf
-
-let pp_print_target ppf = function
-  | Channel c -> Channel.pp_print ppf c
-  | Nickname n -> Nickname.pp_print ppf n
 
 let pp_print ppf = function
 
@@ -114,7 +106,7 @@ let pp_print ppf = function
 
   (* 3.3 Sending messages *)
   | Privmsg (target, message) ->
-     fpf ppf "PRIVMSG %a :%s" pp_print_target target message
+     fpf ppf "PRIVMSG %a :%s" Target.pp_print target message
 
   (* 3.7 Miscellaneous messages *)
   | Ping (server, None) ->

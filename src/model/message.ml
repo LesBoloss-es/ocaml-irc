@@ -1,22 +1,6 @@
 
 let fpf = Format.fprintf
 
-module Prefix =
-  struct
-    type prefix =
-      | Servername of string
-      | Identity of Identity.t
-
-    type t = prefix option
-
-    let pp_print ppf = function
-      | None -> ()
-      | Some (Servername s) ->
-         fpf ppf ":%s" s
-      | Some (Identity id) ->
-         fpf ppf ":%a" Identity.pp_print id
-  end
-
 type t =
   { prefix : Prefix.t ;
     command : Command.t }
@@ -26,6 +10,9 @@ let make prefix command =
 let make_noprefix command =
   { prefix = None ; command }
 
+let prefix message = message.prefix
+let command message = message.command
+  
 let pp_print fmt m =
   (
     match m.prefix with
@@ -46,6 +33,13 @@ let to_string m =
   Format.pp_print_flush ppf ();
   Buffer.contents buf
 
+let to_string_endline m =
+  let buf = Buffer.create 8 in
+  let ppf = Format.formatter_of_buffer buf in
+  pp_print_endline ppf m;
+  Format.pp_print_flush ppf ();
+  Buffer.contents buf
+  
 let from_string str =
   let lb = NegLexing.of_string str in
 
