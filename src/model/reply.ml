@@ -83,6 +83,9 @@ type t =
   | AdminEmail of string
   | TryAgain of string
 
+[@@name "reply"]
+[@@deriving irc_internal_ppx]
+              
 let fpf = Format.fprintf
 
 let pp_print ppf = function

@@ -3,4 +3,4 @@
  (public_name irc.model)
  (inline_tests)
  (libraries irc.utils)
- (preprocess (pps visitors.ppx)))
+ (preprocess (pps ppx_deriving.std irc.internal_ppx)))

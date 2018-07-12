@@ -117,10 +117,10 @@ let from_string str =
 
 (* ============================== [ Handler ] =============================== *)
 
-class handler = object (self: 'self)
-  inherit ['self] Command.handler
-  inherit ['self] Reply.handler
-  inherit ['self] Error.handler
+class handler = object (self)
+  inherit Command.handler
+  inherit Reply.handler
+  inherit Error.handler
 
   method on_message message =
     match message.suffix with

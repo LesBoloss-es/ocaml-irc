@@ -14,7 +14,6 @@ depends: [
   "dune" {build}
   "lwt"
   "ppx_inline_test"
-  "visitors"
 ]
 
 build: ["dune" "build" "-p" name "-j" jobs]
