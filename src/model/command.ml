@@ -1,17 +1,28 @@
 
-type user = string
-type mode = string
-type mask = string
-type service = string
-type server = string
 type keyed_channel = Channel.t * Channel.key option
+type mask = string
+type mode = string
+type server = string
+type service = string
+type user = string
+
+class ['env] custom_handler = object
+  (* This and the [@opaque] look like a dirty hack. I would love to
+     have the visitors allowing for the constructors not to be
+     inspected. *)
+
+  method on_keyed_channel : 'env -> keyed_channel -> unit = fun _ _ -> ()
+  method on_mask : 'env -> mask -> unit = fun _ _ -> ()
+  method on_mode : 'env -> mode -> unit = fun _ _ -> ()
+  method on_server : 'env -> server -> unit = fun _ _ -> ()
+  method on_service : 'env -> service -> unit = fun _ _ -> ()
+  method on_user : 'env -> user -> unit = fun _ _ -> ()
+end
 
 type t =
-  (* These commands are taken from RFC 2812 *)
-
   (* 3.1 Connection Registration *)
   | Pass of string
-  | Nick of Nickname.t
+  | Nick of (Nickname.t [@opaque])
   | User of user * mode * string
   | Oper of string * string
   (* | Mode of string * string list *) (*FIXME: chan vs. user modes*)
@@ -22,7 +33,7 @@ type t =
   (* 3.2 Channel operations *)
   | Join of keyed_channel list
   | Join0
-  | Part of Channel.t list * string
+  | Part of (Channel.t [@opaque]) list * string
   | Mode of string * string list
   | Topic of string * string option
   | Names of string option * string option
@@ -31,7 +42,7 @@ type t =
   | Kick of string * string * string option
 
   (* 3.3 Sending messages *)
-  | Privmsg of Target.t * string
+  | Privmsg of (Target.t [@opaque]) * string
   | Notice of string * string
 
   (* 3.4 Server queries and commands *)
@@ -53,7 +64,7 @@ type t =
   (* 3.6 Who query *)
   | Who of mask * bool
   | Whois of mask list * server option
-  | Whowas of Nickname.t * int option * string option
+  | Whowas of (Nickname.t [@opaque]) * int option * string option
 
   (* 3.7 Miscellaneous messages *)
   | Kill of string * string
@@ -61,11 +72,14 @@ type t =
   | Pong of server * server option
   | Error of string
 
+[@@name "command"]
 [@@deriving visitors {
        variety = "iter" ;
        name = "handler" ;
        visit_prefix = "on_" ;
-       nude = true
+       nude = true ;
+       ancestors = ["Irc_utils.std_handler"; "custom_handler"] ;
+       polymorphic = false
 }]
 
 let fpf = Format.fprintf

@@ -37,12 +37,7 @@ let prefix message = message.prefix
 let suffix message = message.suffix
 
 let pp_print fmt message =
-  (
-    match message.prefix with
-    | None -> ()
-    | Some (Identity id) when not (Identity.is_valid id) -> raise (Invalid_argument "Message.pp_print")
-    | Some p -> fpf fmt "%a " pp_print_prefix_option message.prefix
-  );
+  pp_print_prefix_option fmt message.prefix;
   pp_print_suffix fmt message.suffix
 
 let pp_print_endline fmt m =
@@ -118,4 +113,18 @@ let from_string str =
   in
 
   { prefix = prefix ;
-    suffix = Command.from_strings command params }
+    suffix = Command (Command.from_strings command params) }
+
+(* ============================== [ Handler ] =============================== *)
+
+class handler = object (self: 'self)
+  inherit ['self] Command.handler
+  inherit ['self] Reply.handler
+  inherit ['self] Error.handler
+
+  method on_message message =
+    match message.suffix with
+    | Command command -> self#on_command message.prefix command
+    | Reply reply -> self#on_reply message.prefix reply
+    | Error error -> self#on_error message.prefix error
+end

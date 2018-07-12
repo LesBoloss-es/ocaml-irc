@@ -52,6 +52,7 @@ let debug_repr lb =
   let open Format in
   printf "%s\n" lb.content;
   for i = 1 to lb.pos do
+    ignore i;
     printf " "
   done;
   printf "^@."
