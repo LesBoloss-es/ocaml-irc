@@ -59,7 +59,6 @@ type t =
   | Pong of server * server option
   | Error of string
 
-[@@name "command"]
 [@@deriving irc_internal_ppx]
 
 let fpf = Format.fprintf

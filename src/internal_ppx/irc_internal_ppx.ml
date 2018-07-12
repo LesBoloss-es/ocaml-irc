@@ -1,21 +1,11 @@
 
-let () =
-  Format.eprintf "Yo!@.";
-  Ppx_deriving.(
-    register (
-        create
-          "irc_internal_ppx"
+let type_decl_str ~options ~path type_decls =
+  ignore options;
+  ignore path;
+  ignore type_decls;
+  Format.printf "#options: %d@." (List.length options);
+  Format.printf "#path: %d %s@." (List.length path) (List.hd path);
+  Format.printf "#type_decls: %d@." (List.length type_decls);
+  [%str class handler = object end]
 
-          ~type_decl_str:(
-            fun ~options ~path type_decls ->
-            Format.eprintf "type_decl_str@.";
-            [%expr class handler = object end]
-          )
-
-          ~type_decl_sig:(
-            fun ~options ~path type_decls ->
-            Format.eprintf "type_decl_sig@.";
-            [%expr class handler = object end]
-          )
-          ()));
-  Format.eprintf "Done.@."
+let () = Ppx_deriving.(register (create "irc_internal_ppx" ~type_decl_str ()))

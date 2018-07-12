@@ -54,9 +54,8 @@ type t =
   | UModeUnknownFlag
   | UsersDontMatch
 
-[@@name "error"]
 [@@deriving irc_internal_ppx]
-
+  
 exception Exception of t
 
 let fpf = Format.fprintf

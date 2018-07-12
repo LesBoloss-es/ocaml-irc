@@ -117,7 +117,7 @@ let from_string str =
 
 (* ============================== [ Handler ] =============================== *)
 
-class handler = object (self)
+class virtual handler = object (self)
   inherit Command.handler
   inherit Reply.handler
   inherit Error.handler
