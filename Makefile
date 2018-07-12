@@ -1,29 +1,29 @@
 .PHONY: build doc examples install uninstall test clean
 
 build:
-	jbuilder build @install
+	dune build @install
 	rm -f lib && ln -sf _build/install/default/lib lib
 
 doc:
-	jbuilder build @doc
+	dune build @doc
 	rm -f doc && ln -sf _build/default/_doc/_html doc
 
 examples:
-	jbuilder build @examples
+	dune build @examples
 	mkdir -p bin \
 	    && cd bin \
 	    && find ../_build/default/examples/ -name '*.exe' -exec ln -sf '{}' . ';'
 
 install:
-	jbuilder install
+	dune install
 
 uninstall:
-	jbuilder uninstall
+	dune uninstall
 
 test:
-	jbuilder runtest
+	dune runtest
 
 clean:
-	jbuilder clean
+	dune clean
 	rm -f lib doc
 	rm -rf bin
