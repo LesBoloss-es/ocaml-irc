@@ -61,11 +61,12 @@ type t =
   | Pong of server * server option
   | Error of string
 
-  (* 5.1 Command responses *)
-  | Rpl of Reply.t
-
-  (* 5.2 Error replies *)
-  | Err of Error.t
+[@@deriving visitors {
+       variety = "iter" ;
+       name = "handler" ;
+       visit_prefix = "on_" ;
+       nude = true
+}]
 
 let fpf = Format.fprintf
 
@@ -119,14 +120,6 @@ let pp_print ppf = function
      fpf ppf "PONG %s :%s" server1 server2
   | Error message ->
      fpf ppf "ERROR :%s" message
-
-  (* 5.1 Command responses *)
-  | Rpl reply ->
-     Reply.pp_print ppf reply
-
-  (* 5.2 Error replies *)
-  | Err error ->
-     Error.pp_print ppf error
 
   | _ -> assert false
 

@@ -1,5 +1,4 @@
 (library
  ((name irc_utils)
   (public_name irc.utils)
-  (libraries (lwt))
-  (preprocess (pps (lwt.ppx)))))
+  (libraries (lwt lwt.unix))))

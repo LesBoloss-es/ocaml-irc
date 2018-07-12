@@ -16,4 +16,4 @@ let lowercase_bytes b =
   b
 
 let lowercase s =
-  Bytes.to_string (lowercase_bytes (Bytes.of_string s))
+  Bytes.unsafe_to_string (lowercase_bytes (Bytes.of_string s))

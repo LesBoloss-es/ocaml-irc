@@ -1,26 +1,49 @@
 
 let fpf = Format.fprintf
 
-type t =
-  { prefix : Prefix.t ;
-    command : Command.t }
+(* =============================== [ Prefix ] =============================== *)
 
-let make prefix command =
-  { prefix = Some prefix ; command }
-let make_noprefix command =
-  { prefix = None ; command }
+type prefix =
+  | Servername of string
+  | Identity of Identity.t
+
+let pp_print_prefix_option ppf = function
+  | None -> ()
+  | Some (Servername s) ->
+     fpf ppf ":%s" s
+  | Some (Identity id) ->
+     fpf ppf ":%a" Identity.pp_print id
+
+(* =============================== [ Suffix ] =============================== *)
+
+type suffix =
+  | Command of Command.t
+  | Reply of Reply.t
+  | Error of Error.t
+
+let pp_print_suffix fmt = function
+  | Command command -> Command.pp_print fmt command
+  | Reply reply -> Reply.pp_print fmt reply
+  | Error error -> Error.pp_print fmt error
+
+(* ============================== [ Message ] =============================== *)
+
+type t = { prefix : prefix option ; suffix : suffix }
+
+let make prefix suffix = { prefix = Some prefix ; suffix }
+let make_noprefix suffix = { prefix = None ; suffix }
 
 let prefix message = message.prefix
-let command message = message.command
-  
-let pp_print fmt m =
+let suffix message = message.suffix
+
+let pp_print fmt message =
   (
-    match m.prefix with
-    | None -> fpf fmt "%a"
-    | Some (Prefix.Identity id) when not (Identity.is_valid id) -> raise (Invalid_argument "Message.pp_print")
-    | Some p -> fpf fmt "%a %a" Prefix.pp_print m.prefix
-  )
-    Command.pp_print m.command
+    match message.prefix with
+    | None -> ()
+    | Some (Identity id) when not (Identity.is_valid id) -> raise (Invalid_argument "Message.pp_print")
+    | Some p -> fpf fmt "%a " pp_print_prefix_option message.prefix
+  );
+  pp_print_suffix fmt message.suffix
 
 let pp_print_endline fmt m =
   pp_print fmt m;
@@ -39,7 +62,7 @@ let to_string_endline m =
   pp_print_endline ppf m;
   Format.pp_print_flush ppf ();
   Buffer.contents buf
-  
+
 let from_string str =
   let lb = NegLexing.of_string str in
 
@@ -49,7 +72,7 @@ let from_string str =
     | ':' ->
        NegLexing.next_char lb;
        (
-         try Some (Prefix.Identity (Identity.from_string (NegLexing.next_sep ' ' lb)))
+         try Some (Identity (Identity.from_string (NegLexing.next_sep ' ' lb)))
          with Not_found -> raise (Invalid_argument "Message.from_string: found a prefix but no command")
        )
     | _ ->
@@ -95,4 +118,4 @@ let from_string str =
   in
 
   { prefix = prefix ;
-    command = Command.from_strings command params }
+    suffix = Command.from_strings command params }
