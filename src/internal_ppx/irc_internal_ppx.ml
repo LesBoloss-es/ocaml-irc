@@ -1,27 +1,30 @@
 
 open Parsetree
 open Asttypes
-
+open Ast_helper
+   
 let rec list_ft = function
   | [] -> failwith "ft"
   | [e] -> e
   | _ :: q -> list_ft q
 
-let pcstr_tuple_to_ppat_tuple ~loc = function
+let cstr_decl_to_ppat_construct ~loc cstr_decl =
+  let name = Location.mkloc (Longident.Lident cstr_decl.pcd_name.txt) loc in
+  match cstr_decl.pcd_args with
+  | Pcstr_tuple [] ->
+     Ppat_construct (name, None)
   | Pcstr_tuple [_] ->
-     Ppat_var (Location.mkloc "c0" loc)
+     Ppat_construct (name, Some (Pat.var ~loc (Location.mkloc "c0" loc)))
   | Pcstr_tuple ctl ->
-     Ppat_tuple (
-         List.mapi
-           (fun i _ ->
-             {
-               ppat_loc = loc ;
-               ppat_attributes = [] ;
-               ppat_desc =
-                 Ppat_var (Location.mkloc ("c"^(string_of_int i)) loc)
-             }
+     Ppat_construct (
+         name,
+         Some (
+             Pat.tuple
+               ~loc
+               (List.mapi
+                  (fun i _ -> Pat.var ~loc (Location.mkloc ("c"^(string_of_int i)) loc))
+                  ctl)
            )
-           ctl
        )
   | _ -> assert false
 
@@ -76,20 +79,7 @@ let cstr_decls_to_handler_class_main_method ~loc ~options ~path name cstr_decls 
                                       {
                                         ppat_loc = loc ;
                                         ppat_attributes = [] ;
-                                        ppat_desc =
-                                          (* We match the constructor *)
-                                          Ppat_construct (
-                                              Location.mkloc (Longident.Lident cstr_decl.pcd_name.txt) loc,
-                                              Some {
-                                                  ppat_loc = loc ;
-                                                  ppat_attributes = [] ;
-                                                  ppat_desc =
-                                                    (* We match a tuple of arguments of the right size. *)
-                                                    pcstr_tuple_to_ppat_tuple ~loc cstr_decl.pcd_args
-                                                }
-
-
-                                            )
+                                        ppat_desc = cstr_decl_to_ppat_construct ~loc cstr_decl
                                       } ;
                                     pc_guard = None ;
                                     pc_rhs =
