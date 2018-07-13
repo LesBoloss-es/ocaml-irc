@@ -118,9 +118,9 @@ let from_string str =
 (* ============================== [ Handler ] =============================== *)
 
 class virtual handler = object (self)
-  inherit Command.handler
-  inherit Reply.handler
-  inherit Error.handler
+  inherit [prefix option] Command.handler
+  inherit [prefix option] Reply.handler
+  inherit [prefix option] Error.handler
 
   method on_message message =
     match message.suffix with

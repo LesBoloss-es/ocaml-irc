@@ -39,7 +39,7 @@ type t =
   | EndOfLinks of string
   | BanList of Channel.t * string
   | EndOfBanList of Channel.t
-  | Info of string
+  | RInfo of string
   | EndOfInfo
   | MotdStart of string
   | Motd of string
@@ -178,7 +178,7 @@ let pp_print ppf = function
      fpf ppf "367 %a %s" Channel.pp_print channel banmask
   | EndOfBanList channel ->
      fpf ppf "368 %a :End of channel ban list" Channel.pp_print channel
-  | Info info ->
+  | RInfo info ->
      fpf ppf "371 :%s" info
   | EndOfInfo ->
      fpf ppf "374 :End of INFO list"
