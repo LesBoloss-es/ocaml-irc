@@ -2,23 +2,7 @@
 open Parsetree
 open Asttypes
 open Ast_helper
-
-let str s =
-  Location.mkloc s !Ast_helper.default_loc
-
-let ident s =
-  str (Longident.Lident s)
-
-let rec list_ft = function
-  | [] -> failwith "ft"
-  | [e] -> e
-  | _ :: q -> list_ft q
-
-let name_of_name_and_suffix name suffix =
-  if name = "t" then
-    suffix
-  else
-    name ^ "_" ^ suffix
+open Common
 
 let handler_name_of_name name =
   "on_" ^ (String.lowercase_ascii name)
@@ -26,26 +10,6 @@ let handler_name_of_name name =
 let cstr_decl_to_var_names cstr_decl =
   match cstr_decl.pcd_args with
   | Pcstr_tuple ctl -> List.mapi (fun i _ -> "c"^(string_of_int i)) ctl
-  | _ -> assert false
-
-let cstr_decl_to_ppat_construct cstr_decl =
-  (* Take the declaration of a constructor and returns the pattern
-     that matches it into variables c0 ... cn *)
-  let name = ident cstr_decl.pcd_name.txt in
-  match cstr_decl.pcd_args with
-  | Pcstr_tuple [] ->
-     Pat.construct name None
-  | Pcstr_tuple [_] ->
-     Pat.construct name (Some (Pat.var (str "c0")))
-  | Pcstr_tuple ctl ->
-     Pat.construct
-       name
-       (Some (
-            Pat.tuple
-              (List.mapi
-                 (fun i _ -> Pat.var (str ("c"^(string_of_int i))))
-                 ctl)
-       ))
   | _ -> assert false
 
 let cstr_decl_to_pexp_apply cstr_decl =
@@ -117,7 +81,7 @@ let cstr_decls_to_handler_class ~options ~path name cstr_decls =
     [Ci.mk
        ~virt:Concrete
        ~params:[Typ.var "'a", Invariant]
-       (str (name_of_name_and_suffix name "handler"))
+       (str (name_of_name_and_prefix_suffix "" name "handler"))
        (Cl.structure
           { pcstr_self = [%pat? self];
             pcstr_fields =

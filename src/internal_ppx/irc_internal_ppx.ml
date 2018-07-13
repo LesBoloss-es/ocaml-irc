@@ -16,7 +16,12 @@ let type_decl_to_everything ~options ~path = function
                 ~options
                 ~path
                 type_decl.ptype_name.txt
-                cstr_decls)]
+                cstr_decls);
+
+           Str.value
+             Nonrecursive
+             [Parser.cstr_decls_to_value_binding ~options ~path type_decl.ptype_name.txt cstr_decls]
+          ]
        | _ ->
           assert false
      )
