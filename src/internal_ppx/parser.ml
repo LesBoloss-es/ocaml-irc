@@ -7,7 +7,7 @@ let cstr_decls_to_value_binding ~options ~path name cstr_decls =
   ignore options;
   ignore path;
   Vb.mk
-    (Pat.var (str ("pp_print" ^ (if name = "t" then "" else "_" ^ String.lowercase_ascii name))))
+    (Pat.var (str (name_of_name_and_prefix_suffix "pp_print" (String.lowercase_ascii name) "")))
     (Exp.fun_
        Nolabel
        None
