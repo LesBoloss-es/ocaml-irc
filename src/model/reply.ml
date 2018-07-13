@@ -84,7 +84,7 @@ type t =
   | TryAgain of string
 
 [@@deriving irc_internal_ppx]
-              
+
 let fpf = Format.fprintf
 
 let pp_print ppf = function
@@ -264,3 +264,5 @@ let pp_print ppf = function
      fpf ppf "259 :%s" info
   | TryAgain command ->
      fpf ppf "263 %s :Please wait a while and try again." command
+
+[@@deriving irc_internal_ppx]
