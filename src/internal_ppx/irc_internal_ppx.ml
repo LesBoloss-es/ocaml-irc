@@ -1,7 +1,6 @@
 open Parsetree
 open Asttypes
 open Ast_helper
-open Common
    
 let type_decl_str ~options ~path = function
   | [type_decl] ->
