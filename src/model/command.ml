@@ -1,10 +1,25 @@
 
 type keyed_channel = Channel.t * Channel.key option
+
 type mask = string
+let mask_to_string s = s
+let mask_from_string s = s
+
 type mode = string
+let mode_to_string s = s
+let mode_from_string s = s
+
 type server = string
+let server_to_string s = s
+let server_from_string s = s
+
 type service = string
+let service_to_string s = s
+let service_from_string s = s
+
 type user = string
+let user_to_string s = s
+let user_from_string s = s
 
 type t =
   (* 3.1 Connection Registration *)

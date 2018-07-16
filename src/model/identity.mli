@@ -17,7 +17,8 @@ val set_nick : t -> Nickname.t -> t
 val set_user : t -> string -> t
 
 val is_valid : t -> bool
-  
+
 val pp_print : Format.formatter -> t -> unit
+val to_string : t -> string
 
 val from_string : string -> t

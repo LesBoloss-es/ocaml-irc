@@ -37,6 +37,8 @@ let pp_print ppf id =
   if id.user <> None then Format.fprintf ppf "!%s" (user id);
   if id.host <> None then Format.fprintf ppf "%@%s" (host id)
 
+let to_string = Irc_utils.ExtPervasives.to_string_of_pp_print pp_print
+
 let from_string str =
   let buf = NegLexing.of_string str in
   match NegLexing.next_sep '!' buf with

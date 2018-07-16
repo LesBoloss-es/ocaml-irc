@@ -4,7 +4,8 @@ open Common
 open Parsetree
 
 let core_type_to_to_string = function
-  | [%type: string] -> [%expr fun () -> ()]
+  | [%type: string] -> [%expr fun s -> s]
+  | [%type: char] -> [%expr String.make 1]
   | [%type: int] -> [%expr string_of_int]
   | {ptyp_desc=Ptyp_constr(lid,_); _} ->
      Exp.ident (Location.mkloc (Ppx_deriving.mangle_lid (`Suffix "to_string") lid.txt) !Ast_helper.default_loc)
@@ -39,20 +40,16 @@ let cstr_strings ~options ~path cstr_decl =
 
 let to_strings ~options ~path type_decl =
   (*
-     let pp_print_<name> = fun fmt -> function
+     let <name>_to_strings = function
        ...
        | C (c0, .., cn) -> ["C"; <c0>_to_string c0; ...; <cn>_to_string cn]
    *)
   Vb.mk
     (Pat.var (str (Ppx_deriving.mangle_type_decl (`Suffix "to_strings") type_decl)))
-    (Exp.fun_
-       Nolabel
-       None
-       (Pat.var (str "fmt"))
-       (Exp.function_
-          (List.map
-             (fun cstr_decl ->
-               Exp.case
-                 (cstr_pattern cstr_decl)
-                 (cstr_strings ~options ~path cstr_decl))
-             (cstr_decls_of_type_decl type_decl))))
+    (Exp.function_
+       (List.map
+          (fun cstr_decl ->
+            Exp.case
+              (cstr_pattern cstr_decl)
+              (cstr_strings ~options ~path cstr_decl))
+          (cstr_decls_of_type_decl type_decl)))
