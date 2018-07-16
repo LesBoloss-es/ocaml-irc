@@ -1,31 +1,21 @@
-
 open Parsetree
 open Asttypes
 open Ast_helper
-
-let type_decl_to_everything ~options ~path = function
-  (* We expect exactly one type declaration. *)
+open Common
+   
+let type_decl_str ~options ~path = function
   | [type_decl] ->
-     (
-       match type_decl.ptype_kind with
-       (* This type declaration must be a variant. *)
-       | Ptype_variant cstr_decls ->
-          Ast_helper.default_loc := type_decl.ptype_loc;
-          [Str.mk
-             (Handler.cstr_decls_to_handler_class
-                ~options
-                ~path
-                type_decl.ptype_name.txt
-                cstr_decls);
+     Ast_helper.default_loc := type_decl.ptype_loc;
+     [
+       (* The 'handler' class *)
+       Str.mk (Handler.handler ~options ~path type_decl);
 
-           Str.value
-             Nonrecursive
-             [Parser.cstr_decls_to_value_binding ~options ~path type_decl.ptype_name.txt cstr_decls]
-          ]
-       | _ ->
-          assert false
-     )
+       (* The to_strings function *)
+       Str.value Nonrecursive [Printer.to_strings ~options ~path type_decl];
+
+       (* The from_strings function (FIXME) *)
+     ]
   | _ ->
      assert false
 
-let () = Ppx_deriving.(register (create "irc_internal_ppx" ~type_decl_str:type_decl_to_everything ()))
+let () = Ppx_deriving.(register (create "irc_internal_ppx" ~type_decl_str ()))
