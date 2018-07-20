@@ -7,3 +7,4 @@ let pp_print ppf = function
   | Channel c -> Channel.pp_print ppf c
   | Nickname n -> Nickname.pp_print ppf n
 
+let to_string = Irc_utils.ExtPervasives.to_string_of_pp_print pp_print

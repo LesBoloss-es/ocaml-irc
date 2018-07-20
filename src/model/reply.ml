@@ -1,10 +1,10 @@
 
 type t =
-  | Welcome of Nickname.t * Identity.t                                [@repr "001"] (*FIXME*)
-  | Yourhost of Nickname.t * string * string                          [@repr "002"] (*FIXME*)
-  | Created of Nickname.t * string                                    [@repr "003"] (*FIXME*)
+  | Welcome of string                                                 [@repr "001"]
+  | Yourhost of string                                                [@repr "002"]
+  | Created of string                                                 [@repr "003"]
   | Myinfo of Nickname.t * string * string * string * string          [@repr "004"]
-  | Bounce of string * int                                            [@repr "005"] (*FIXME*)
+  | Bounce of string                                                  [@repr "005"]
 
   | TraceConnecting of string * string                                [@repr "201"] (*FIXME*)
   | TraceHandshake of string * string                                 [@repr "202"] (*FIXME*)
@@ -25,6 +25,7 @@ type t =
   | UmodeIs of string                                                 [@repr "221"]
 
   | ServList of string * string * string * string * string * string   [@repr "234"]
+              [@to_strings fun _ _ _ _ _ _ -> []]
   | ServListEnd of string * string                                    [@repr "235"] [@optarg "End of service listing"]
 
   | StatsUptime of int * int * int * int                              [@repr "242"]
@@ -44,9 +45,11 @@ type t =
   | TryAgain of string                                                [@repr "263"] [@optarg "Please wait a while and try again."]
 
   | Away of Nickname.t * string                                       [@repr "301"]
-  | UserHost of (Nickname.t * bool * bool * string) list              [@repr "302"] (*FIXME*)
+  | UserHost of (Nickname.t * bool * bool * string) list              [@repr "302"]
+                  [@from_strings fun _ -> UserHost []] (*FIXME*)
+                  [@to_strings fun _ -> []] (*FIXME*)
   | IsOn of Nickname.t list                                           [@repr "303"] (*FIXME*)
-
+              [@to_strings fun _ -> []]
   | UnAway                                                            [@repr "305"] [@optarg "You are no longer marked as being away"]
   | NowAway                                                           [@repr "306"] [@optarg "You have been marked as being away"]
 
@@ -111,4 +114,4 @@ type t =
   | TraceServer                                                       (*FIXME*)
   | StatsOline                                                        (*FIXME*)
 
-[@@deriving irc_internal_ppx]
+[@@deriving irc_internal_ppx { handler_prefix = "on_rpl_" } ]

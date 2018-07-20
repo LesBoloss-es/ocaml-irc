@@ -1,6 +1,8 @@
 open Parsetree
 open Ast_helper
 
+let deriver = "irc_internal_ppx"
+   
 let str s =
   Location.mkloc s !Ast_helper.default_loc
 
