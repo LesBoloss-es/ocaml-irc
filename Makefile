@@ -2,11 +2,11 @@
 
 build:
 	dune build @install
-	rm -f lib && ln -sf _build/install/default/lib lib
+	[ -e lib ] || ln -s _build/install/default/lib lib
 
 doc:
 	dune build @doc
-	rm -f doc && ln -sf _build/default/_doc/_html doc
+	[ -e doc ] || ln -s _build/default/_doc/_html doc
 
 examples:
 	dune build @examples

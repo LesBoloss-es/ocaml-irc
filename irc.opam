@@ -3,7 +3,7 @@ opam-version: "1.2"
 name: "irc"
 version: "0.1"
 
-authors: [ "Niols <niols@niols.fr>" ]
+authors: "Niols <niols@niols.fr>"
 maintainer: "Niols <niols@niols.fr>"
 
 homepage: "https://github.com/LesBoloss-es/irc"
@@ -11,9 +11,10 @@ bug-reports: "https://github.com/LesBoloss-es/irc/issues"
 dev-repo: "git://github.com/LesBoloss-es/irc.git"
 
 depends: [
-  "dune" {build}
+  "dune"     {build}
   "lwt"
   "ppx_inline_test"
+  "ppxfind"  {build}
 ]
 
 build: ["dune" "build" "-p" name "-j" jobs]

@@ -7,7 +7,7 @@ let pp_print ppf nick =
 let to_string nick =
   nick
 
-let of_string nick =
+let from_string nick =
   (* nickname   =  ( letter / special ) *8( letter / digit / special / "-" ) *)
   (* letter     =  %x41-5A / %x61-7A       ; A-Z / a-z *)
   (* digit      =  %x30-39                 ; 0-9 *)

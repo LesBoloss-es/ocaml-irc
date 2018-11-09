@@ -1,4 +1,3 @@
-
 let fpf = Format.fprintf
 
 (* =============================== [ Prefix ] =============================== *)
@@ -113,7 +112,7 @@ let from_string str =
   in
 
   { prefix = prefix ;
-    suffix = Command (Command.from_strings command params) }
+    suffix = Command (Command.from_sl (command :: params)) }
 
 (* ============================== [ Handler ] =============================== *)
 

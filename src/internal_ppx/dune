@@ -1,6 +1,0 @@
-(library
- (name irc_internal_ppx)
- (public_name irc.internal_ppx)
- (libraries ppx_deriving.api)
- (preprocess (action (run ppxfind -legacy ppx_tools.metaquot --as-pp %{input-file})))
- (kind ppx_deriver))

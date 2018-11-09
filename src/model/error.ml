@@ -1,3 +1,4 @@
+let (||>) f g x = f x |> g
 
 type t =
   | NoSuchNick of Nickname.t                     [@repr "401"] [@optarg "No such nick/channel"]
@@ -65,6 +66,24 @@ type t =
   | UModeUnknownFlag                             [@repr "501"] [@optarg "Unknown MODE flag"]
   | UsersDontMatch                               [@repr "502"] [@optarg "Cannot change mode for other users"]
 
-[@@deriving irc_internal_ppx]
+exception Exception of t (*FIXME: remove*)
 
-exception Exception of t
+let from_sl = function
+  | ["401"; n] -> NoSuchNick (Nickname.from_string n)
+  | _ -> assert false
+
+let to_sl = function
+  | NoSuchNick n -> ["401"; Nickname.to_string n]
+  | _ -> assert false
+
+let from_string = Sl.from_string ||> from_sl
+let to_string = to_sl ||> Sl.to_string
+let pp_print fmt = to_string ||> Format.pp_print_string fmt
+
+class virtual ['prefix] handler = object (self)
+  method virtual on_nosuchnick : 'prefix -> Nickname.t -> unit
+
+  method on_error (prefix : 'prefix) = function
+    | NoSuchNick n -> self#on_nosuchnick prefix n
+    | _ -> assert false
+end

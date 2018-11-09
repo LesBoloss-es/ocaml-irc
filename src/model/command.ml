@@ -1,3 +1,4 @@
+let (||>) f g x = f x |> g
 
 type keyed_channel = Channel.t * Channel.key option
 
@@ -34,21 +35,14 @@ type t =
 
   (* 3.2 Channel operations *)
   | Join of keyed_channel list
-              [@to_strings fun _ -> []]
   | Join0
   | Part of Channel.t list * string
-              [@to_strings fun _ _ -> []]
   | Mode of string * string list
-              [@to_strings fun _ _ -> []]
   | Topic of string * string option
-              [@to_strings fun _ _ -> []]
   | Names of string option * string option
-              [@to_strings fun _ _ -> []]
   | List of string option * string option
-              [@to_strings fun _ _ -> []]
   | Invite of string * string
   | Kick of string * string * string option
-              [@to_strings fun _ _ _ -> []]
 
   (* 3.3 Sending messages *)
   | Privmsg of Target.t * string
@@ -56,45 +50,48 @@ type t =
 
   (* 3.4 Server queries and commands *)
   | Motd of string option
-              [@to_strings fun _ -> []]
   | Lusers of string option * string option
-              [@to_strings fun _ _ -> []]
   | Version of string option
-              [@to_strings fun _ -> []]
   | Stats of string option * string option
-              [@to_strings fun _ _ -> []]
   | Links of string option * string option
-              [@to_strings fun _ _ -> []]
   | Time of string option
-              [@to_strings fun _ -> []]
   | Connect of string * int * string option
-              [@to_strings fun _ _ _ -> []]
   | Trace of string option
-              [@to_strings fun _ -> []]
   | Admin of string option
-              [@to_strings fun _ -> []]
   | Info of string option
-              [@to_strings fun _ -> []]
 
   (* 3.5 Squery *)
   | Servlist of mask option * string option
-              [@to_strings fun _ _ -> []]
   | Squery of service * string
 
   (* 3.6 Who query *)
   | Who of mask * bool
-              [@to_strings fun _ _ -> []]
   | Whois of mask list * server option
-              [@to_strings fun _ _ -> []]
   | Whowas of Nickname.t * int option * string option
-              [@to_strings fun _ _ _ -> []]
 
   (* 3.7 Miscellaneous messages *)
   | Kill of string * string
   | Ping of server * server option
-              [@to_strings fun _ _ -> []]
   | Pong of server * server option
-              [@to_strings fun _ _ -> []]
   | Error of string
 
-[@@deriving irc_internal_ppx]
+let from_sl = function
+  | ["PASS"; pw] -> Pass pw
+  | ["NICK"; n] -> Nick (Nickname.from_string n)
+  | _ -> assert false
+
+let to_sl = function
+  | Pass pw -> ["PASS"; pw]
+  | _ -> assert false
+
+let from_string = Sl.from_string ||> from_sl
+let to_string = to_sl ||> Sl.to_string
+let pp_print fmt = to_string ||> Format.pp_print_string fmt
+
+class virtual ['prefix] handler = object (self)
+  method virtual on_pass : 'prefix -> string -> unit
+
+  method on_command prefix = function
+    | Pass p -> self#on_pass prefix p
+    | _ -> assert false
+end

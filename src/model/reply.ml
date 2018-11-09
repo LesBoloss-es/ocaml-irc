@@ -1,3 +1,4 @@
+let (||>) f g x = f x |> g
 
 type t =
   | Welcome of string                                                 [@repr "001"]
@@ -114,4 +115,22 @@ type t =
   | TraceServer                                                       (*FIXME*)
   | StatsOline                                                        (*FIXME*)
 
-[@@deriving irc_internal_ppx { handler_prefix = "on_rpl_" } ]
+let from_sl = function
+  | ["001"; s] -> Welcome s
+  | _ -> assert false
+
+let to_sl = function
+  | Welcome s -> ["001"; s]
+  | _ -> assert false
+
+let from_string = Sl.from_string ||> from_sl
+let to_string = to_sl ||> Sl.to_string
+let pp_print fmt = to_string ||> Format.pp_print_string fmt
+
+class virtual ['prefix] handler = object (self)
+  method virtual on_welcome : 'prefix -> string -> unit
+
+  method on_reply prefix = function
+    | Welcome s -> self#on_welcome prefix s
+    | _ -> assert false
+end

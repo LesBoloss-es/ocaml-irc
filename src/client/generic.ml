@@ -1,10 +1,7 @@
+let (>>=) = Lwt.bind
 
 class generic = object (self)
-  inherit Irc_model.Command.handler
-
-  method on_message message =
-    let open Irc_model in
-    self#on_command (Message.prefix message) (Message.command message)
+  inherit Irc_model.Message.handler
 
   method loop () : unit Lwt.t =
     Server.read server
@@ -21,5 +18,4 @@ class generic = object (self)
 
   method start () : unit =
     Lwt_main.run (self#thread ())
-
 end
