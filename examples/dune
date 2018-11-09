@@ -4,4 +4,5 @@
 
 (executable
  (name mirror)
- (libraries irc))
+ (libraries irc)
+ (preprocess (pps lwt_ppx)))

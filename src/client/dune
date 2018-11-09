@@ -1,5 +1,5 @@
 (library
  (name irc_client)
  (public_name irc.client)
- (libraries irc.common irc.model lwt.unix)
+ (libraries irc.common irc.model lwt.unix logs.lwt)
  (preprocess (pps lwt_ppx)))

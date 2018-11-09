@@ -82,6 +82,7 @@ let from_sl = function
 
 let to_sl = function
   | Pass pw -> ["PASS"; pw]
+  | Privmsg (target, content) -> ["PRIVMSG"; Target.to_string target; content]
   | _ -> assert false
 
 let from_string = Sl.from_string ||> from_sl
@@ -90,8 +91,10 @@ let pp_print fmt = to_string ||> Format.pp_print_string fmt
 
 class virtual ['prefix] handler = object (self)
   method virtual on_pass : 'prefix -> string -> unit
+  method virtual on_privmsg : 'prefix -> Target.t -> string -> unit
 
   method on_command prefix = function
-    | Pass p -> self#on_pass prefix p
+    | Pass password -> self#on_pass prefix password
+    | Privmsg (target, user) -> self#on_privmsg prefix target user
     | _ -> assert false
 end

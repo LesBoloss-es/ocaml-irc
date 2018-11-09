@@ -1,9 +1,5 @@
 open Irc_common
 
-let unwrap = function
-  | Some x -> x
-  | None -> assert false
-
 type t =
   { nick : Nickname.t option ;
     user : string option ;

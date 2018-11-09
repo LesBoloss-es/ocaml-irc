@@ -1,24 +1,33 @@
-open Irc_model
+open Irc_common
+module Connection = Connection
 
-class virtual skeleton address port = object (self)
+class virtual skeleton conn = object (self)
   inherit Irc_model.Message.handler
 
-  method loop (ichan, ochan) : unit Lwt.t =
-    let%lwt message = Lwt_io.read ichan in
-    self#on_message (Message.from_string message);
-    self#loop (ichan, ochan)
+  method loop () : unit Lwt.t =
+    let%lwt message = Connection.receive conn in
+    self#on_message message;
+    self#loop ()
 
-  method start_async () : unit =
-    Lwt.async self#lwt
+  method start () =
+    Lwt.return ()
 
-  method start () : unit =
-    Lwt_main.run (self#lwt ())
+  method build () =
+    self#start () >>= fun () ->
+    self#loop ()
+
+  method run_async () : unit =
+    Lwt.async self#build
+
+  method run () : unit =
+    Lwt_main.run (self#build ())
 end
 
-class dummy address port = object
-  inherit skeleton address port
+class dummy conn = object
+  inherit skeleton conn
 
   method on_welcome _ _ = ()
   method on_pass _ _ = ()
+  method on_privmsg _ _ _ = ()
   method on_nosuchnick _ _ = ()
 end
