@@ -1,0 +1,4 @@
+(library
+ (name irc_common)
+ (public_name irc.common)
+ (libraries lwt))

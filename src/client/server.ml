@@ -1,18 +1,15 @@
-open Irc_utils
-open Irc_model
-let (>>=) = Lwt.bind
 
 type t =
-  { address : string ;
-    port : int ;
-    socket : Socket.t }
+  { ichan : Lwt_io.input_channel ;
+    ochan : Lwt_io.output_channel }
 
-let make address port =
-  { address ; port ; socket = Socket.make address port }
-  
-let connect server =
-  Socket.connect server.socket
-  
-let send server message : unit Lwt.t =
-  Message.to_string_endline message
-  |> Socket.output server.socket
+let connect ~address ~port =
+  let sockaddr =
+    Unix.(ADDR_INET (inet_addr_of_string address, port))
+  in
+  let%lwt (ichan, ochan) = Lwt_io.open_connection sockaddr in
+  Lwt.return { ichan ; ochan }
+
+let send _ _ = assert false
+
+let receive _ = assert false

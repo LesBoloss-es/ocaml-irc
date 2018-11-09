@@ -2,4 +2,4 @@
  (name irc_model)
  (public_name irc.model)
  (inline_tests)
- (libraries irc.utils))
+ (libraries irc.common))
