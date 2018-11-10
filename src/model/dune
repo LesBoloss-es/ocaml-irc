@@ -2,4 +2,5 @@
  (name irc_model)
  (public_name irc.model)
  (inline_tests)
- (libraries irc.common))
+ (libraries irc.common)
+ (preprocess (pps ppx_deriving.std)))

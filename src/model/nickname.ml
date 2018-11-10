@@ -1,5 +1,5 @@
-
 type t = string
+[@@deriving show]
 
 let pp_print ppf nick =
   Format.fprintf ppf "%s" nick
@@ -14,13 +14,13 @@ let from_string nick =
   (* special    =  %x5B-60 / %x7B-7D *)
   (*                   ; "[", "]", "\\", "`", "_", "^", "{", "|", "}" *)
   if String.length nick = 0 then
-    raise (Invalid_argument "Nickname.of_string");
+    raise (Invalid_argument "Nickname.from_string");
   let c = Char.code nick.[0] in
   if not (c = 45 || (65 <= c && c <= 125)) then
-    raise (Invalid_argument "Nickname.of_string");
+    raise (Invalid_argument "Nickname.from_string");
   for i = 1 to String.length nick - 1 do
     let c = Char.code nick.[i] in
     if not (c = 45 || (48 <= c && c <= 57) || (65 <= c && c <= 125)) then
-      raise (Invalid_argument "Nickname.of_string");
+      raise (Invalid_argument "Nickname.from_string");
   done;
 nick

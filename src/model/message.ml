@@ -5,6 +5,7 @@ let fpf = Format.fprintf
 type prefix =
   | Servername of string
   | Identity of Identity.t
+[@@deriving show]
 
 let pp_print_prefix_option ppf = function
   | None -> ()
@@ -13,31 +14,23 @@ let pp_print_prefix_option ppf = function
   | Some (Identity id) ->
      fpf ppf ":%a" Identity.pp_print id
 
-(* =============================== [ Suffix ] =============================== *)
-
-type suffix =
-  | Command of Command.t
-  | Reply of Reply.t
-  | Error of Error.t
-
-let pp_print_suffix fmt = function
-  | Command command -> Command.pp_print fmt command
-  | Reply reply -> Reply.pp_print fmt reply
-  | Error error -> Error.pp_print fmt error
-
 (* ============================== [ Message ] =============================== *)
 
-type t = { prefix : prefix option ; suffix : suffix }
+type t =
+  { prefix : prefix option ;
+    suffix : Suffix.t }
+[@@deriving show]
 
-let make prefix suffix = { prefix = Some prefix ; suffix }
-let make_noprefix suffix = { prefix = None ; suffix }
+let make ?prefix ~suffix () = { prefix ; suffix }
+
+let from_command command = make ~suffix:(Command command) ()
 
 let prefix message = message.prefix
 let suffix message = message.suffix
 
 let pp_print fmt message =
   pp_print_prefix_option fmt message.prefix;
-  pp_print_suffix fmt message.suffix
+  Format.pp_print_string fmt (Suffix.to_string message.suffix)
 
 let pp_print_endline fmt m =
   pp_print fmt m;
@@ -58,61 +51,23 @@ let to_string_endline m =
   Buffer.contents buf
 
 let from_string str =
-  let lb = NegLexing.of_string str in
+  let lb = NegLexing.from_string str in
 
   (* get prefix if there is one *)
   let prefix =
     match NegLexing.peek_char lb with
     | ':' ->
        NegLexing.next_char lb;
-       (
-         try Some (Identity (Identity.from_string (NegLexing.next_sep ' ' lb)))
-         with Not_found -> raise (Invalid_argument "Message.from_string: found a prefix but no command")
-       )
+       let string = NegLexing.next_sep ' ' lb in
+       Some
+         (try Identity (Identity.from_string string)
+          with Invalid_argument _ -> Servername string)
     | _ ->
        None
   in
 
-  (* get command; there must be one *)
-  let command =
-    try NegLexing.next_sep ' ' lb
-    with Not_found -> NegLexing.remaining lb
-  in
-
-  (* get parameters *)
-  let params =
-    let rec find_params acc =
-      try
-        (
-          match NegLexing.peek_char lb with
-          | ':' ->
-             (* trailing: we take everything from here until the end and
-                check that we end indeed with a newline *)
-             NegLexing.next_char lb;
-             let trailing = NegLexing.remaining lb in
-             trailing :: acc
-
-          | _ ->
-             (
-               try
-                 (* a regular parameter *)
-                 find_params ((NegLexing.next_sep ' ' lb) :: acc)
-               with
-                 Not_found ->
-                 (* the last parameter *)
-                 let trailing = NegLexing.remaining lb in
-                 trailing :: acc
-             )
-        )
-      with
-      | NegLexing.Error "end of lexbuf" ->
-         acc
-    in
-    List.rev (find_params [])
-  in
-
   { prefix = prefix ;
-    suffix = Command (Command.from_sl (command :: params)) }
+    suffix = Suffix.from_neglexbuf lb }
 
 (* ============================== [ Handler ] =============================== *)
 

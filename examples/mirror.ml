@@ -1,11 +1,15 @@
 open Irc.Common open Irc.Model open Irc.Client
 
-let mirror conn = object (_self)
-  inherit dummy conn (* as super *)
+let params =
+  { nicks = ["skdjfh"] ;
+    user = "sldkfj" ;
+    realname = "dflkg jdlfk" }
 
-  (* method! start () =
-   *   Connection.send_async conn (Message.make_noprefix (Command (Privmsg (Nickname (Nickname.from_string "Niols"), "Yo"))));
-   *   super#start () *)
+let mirror conn = object (_self)
+  inherit full conn params
+
+  method! on_welcome _ _ _ =
+    Connection.send conn (Message.from_command (Command.Join [Channel.from_string "#abcdefgh",None]))
 
   method! on_privmsg prefix target content =
     let source =
@@ -16,14 +20,15 @@ let mirror conn = object (_self)
     let open Command in
     (
       match target with
+      | All ->
+         assert false
       | Channel channel ->
          Privmsg (Channel channel, content)
       | Nickname _ ->
          Privmsg (Nickname source, content)
     )
-    |> (fun command -> Message.Command command)
-    |> Message.make_noprefix
-    |> Irc.Client.Connection.send_async conn
+    |> Message.from_command
+    |> Connection.send conn
 end
 
 let main () =

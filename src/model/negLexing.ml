@@ -6,7 +6,7 @@ type lexbuf =
     length : int ;
     mutable pos : int }
 
-let of_string s =
+let from_string s =
   { content = s ;
     length = String.length s ;
     pos = 0 }

@@ -4,6 +4,7 @@ type t =
   { nick : Nickname.t option ;
     user : string option ;
     host : string option }
+[@@deriving show]
 
 let nick_opt id = id.nick
 let nick id = unwrap (nick_opt id)
@@ -37,7 +38,7 @@ let pp_print ppf id =
 let to_string = Format.to_string_of_pp_print pp_print
 
 let from_string str =
-  let buf = NegLexing.of_string str in
+  let buf = NegLexing.from_string str in
   match NegLexing.next_sep '!' buf with
   | exception Not_found ->
      (

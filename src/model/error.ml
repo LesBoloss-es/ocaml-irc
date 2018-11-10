@@ -65,20 +65,18 @@ type t =
 
   | UModeUnknownFlag                             [@repr "501"] [@optarg "Unknown MODE flag"]
   | UsersDontMatch                               [@repr "502"] [@optarg "Cannot change mode for other users"]
+[@@deriving show]
 
 exception Exception of t (*FIXME: remove*)
 
-let from_sl = function
-  | ["401"; n] -> NoSuchNick (Nickname.from_string n)
+let from_low command arguments =
+  match command, arguments with
+  | "401", [nick] -> NoSuchNick (Nickname.from_string nick)
   | _ -> assert false
 
-let to_sl = function
-  | NoSuchNick n -> ["401"; Nickname.to_string n]
+let to_low = function
+  | NoSuchNick nick -> "401", [Nickname.to_string nick]
   | _ -> assert false
-
-let from_string = Sl.from_string ||> from_sl
-let to_string = to_sl ||> Sl.to_string
-let pp_print fmt = to_string ||> Format.pp_print_string fmt
 
 class virtual ['prefix] handler = object (self)
   method virtual on_nosuchnick : 'prefix -> Nickname.t -> unit

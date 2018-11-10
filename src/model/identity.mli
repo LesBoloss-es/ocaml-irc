@@ -1,4 +1,3 @@
-
 type t
 
 val nick : t -> Nickname.t
@@ -22,3 +21,8 @@ val pp_print : Format.formatter -> t -> unit
 val to_string : t -> string
 
 val from_string : string -> t
+
+(** {2 Representation} *)
+
+val pp : Format.formatter -> t -> unit
+val show : t -> string

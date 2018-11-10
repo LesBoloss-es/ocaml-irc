@@ -1,6 +1,5 @@
-
-type t = string
-type key = string
+type t = string [@@deriving show]
+type key = string [@@deriving show]
 
 let is_valid s =
   (* FIXME: more complicated than that *)
@@ -11,7 +10,7 @@ let is_valid s =
   && (String.index_opt s ',' = None)
   && (String.index_opt s (Char.chr 7) = None)
 
-let of_string s =
+let from_string s =
   if is_valid s then
     Misc.lowercase s
   else
@@ -19,6 +18,8 @@ let of_string s =
 
 let to_string s =
   s
+
+let key_to_string s = s
 
 let pp_print =
   Format.pp_print_string

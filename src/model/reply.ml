@@ -1,11 +1,11 @@
 let (||>) f g x = f x |> g
 
 type t =
-  | Welcome of string                                                 [@repr "001"]
-  | Yourhost of string                                                [@repr "002"]
-  | Created of string                                                 [@repr "003"]
-  | Myinfo of Nickname.t * string * string * string * string          [@repr "004"]
-  | Bounce of string                                                  [@repr "005"]
+  | Welcome of Nickname.t * string
+  | Yourhost of Nickname.t * string
+  | Created of Nickname.t * string
+  | Myinfo of Nickname.t * string * string * string * string
+  | Bounce of Nickname.t * string
 
   | TraceConnecting of string * string                                [@repr "201"] (*FIXME*)
   | TraceHandshake of string * string                                 [@repr "202"] (*FIXME*)
@@ -17,7 +17,7 @@ type t =
   | TraceNewType of string * string                                   [@repr "208"] (*FIXME*)
   | TraceClass of string * string                                     [@repr "209"] (*FIXME*)
 
-  | StatsLinkInfo of string * string * string * string * string * string * string
+  | StatlowinkInfo of string * string * string * string * string * string * string
                                                                       [@repr "211"]
   | StatsCommands of string * string * string * string                [@repr "212"]
 
@@ -114,23 +114,33 @@ type t =
   | TraceLink                                                         (*FIXME*)
   | TraceServer                                                       (*FIXME*)
   | StatsOline                                                        (*FIXME*)
+[@@deriving show]
 
-let from_sl = function
-  | ["001"; s] -> Welcome s
+let from_low command arguments =
+  match command, arguments with
+  | "001", [nick; text] -> Welcome (Nickname.from_string nick, text)
+  | "002", [nick; text] -> Yourhost (Nickname.from_string nick, text)
+  | "003", [nick; text] -> Created (Nickname.from_string nick, text)
+  | "004", [nick; servername; version; usermodes; channelmodes] -> Myinfo (Nickname.from_string nick, servername, version, usermodes, channelmodes)
+  | "005", [nick; text] -> Bounce (Nickname.from_string nick, text)
   | _ -> assert false
 
-let to_sl = function
-  | Welcome s -> ["001"; s]
+let to_low = function
+  | Welcome (nick, text) -> "001", [Nickname.to_string nick; text]
   | _ -> assert false
-
-let from_string = Sl.from_string ||> from_sl
-let to_string = to_sl ||> Sl.to_string
-let pp_print fmt = to_string ||> Format.pp_print_string fmt
 
 class virtual ['prefix] handler = object (self)
-  method virtual on_welcome : 'prefix -> string -> unit
+  method virtual on_welcome : 'prefix -> Nickname.t -> string -> unit
+  method virtual on_yourhost : 'prefix -> Nickname.t -> string -> unit
+  method virtual on_created : 'prefix -> Nickname.t -> string -> unit
+  method virtual on_myinfo : 'prefix -> Nickname.t -> string -> string -> string -> string -> unit
+  method virtual on_bounce : 'prefix -> Nickname.t -> string -> unit
 
   method on_reply prefix = function
-    | Welcome s -> self#on_welcome prefix s
+    | Welcome (nick, text) -> self#on_welcome prefix nick text
+    | Yourhost (nick, text) -> self#on_yourhost prefix nick text
+    | Created (nick, text) -> self#on_created prefix nick text
+    | Myinfo (nick, servername, version, usermodes, channelmodes) -> self#on_myinfo prefix nick servername version usermodes channelmodes
+    | Bounce (nick, text) -> self#on_bounce prefix nick text
     | _ -> assert false
 end
