@@ -46,7 +46,9 @@ let from_neglexbuf lb =
   with Assert_failure _ ->
         try Reply (Reply.from_low command params)
         with Assert_failure _ ->
-          Error (Error.from_low command params)
+              try Error (Error.from_low command params)
+              with Assert_failure _ ->
+                    raise (Invalid_argument "Suffix.fromneglexbuf")
 
 let to_string suffix =
   let (command, arguments) =

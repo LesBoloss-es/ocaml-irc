@@ -29,7 +29,7 @@ type t =
   | Nick of Nickname.t
   | User of user * mode * string
   | Oper of string * string
-  (* | Mode of string * string list *) (*FIXME: chan vs. user modes*)
+  | Umode of Nickname.t * string list
   | Service of string * string * string * string * string * string
   | Quit of string
   | Squit of string * string
@@ -38,12 +38,12 @@ type t =
   | Join of keyed_channel list
   | Join0
   | Part of Channel.t list * string
-  | Mode of string * string list
-  | Topic of string * string option
-  | Names of string option * string option
-  | List of string option * string option
-  | Invite of string * string
-  | Kick of string * string * string option
+  | Cmode of Channel.t * string list
+  | Topic of Channel.t * string option
+  | Names of Channel.t list * string option
+  | List of Channel.t list * string option
+  | Invite of Nickname.t * Channel.t
+  | Kick of Channel.t list * string list * string option
 
   (* 3.3 Sending messages *)
   | Privmsg of Target.t * string
@@ -71,7 +71,7 @@ type t =
   | Whowas of Nickname.t * int option * string option
 
   (* 3.7 Miscellaneous messages *)
-  | Kill of string * string
+  | Kill of Nickname.t * string
   | Ping of server * server option
   | Pong of server * server option
   | Error of string
@@ -79,9 +79,13 @@ type t =
 
 let from_low command arguments =
   match command, arguments with
-  | "PASS",   [password]     -> Pass password
-  | "NICK",   [nick]         -> Nick (Nickname.from_string nick)
-  | "NOTICE", [target; text] -> Notice (Target.from_string target, text)
+  | "PASS",    [password]     -> Pass password
+  | "NICK",    [nick]         -> Nick (Nickname.from_string nick)
+  | "PRIVMSG", [target; text] -> Privmsg (Target.from_string target, text)
+  | "NOTICE",  [target; text] -> Notice (Target.from_string target, text)
+  | "JOIN",    ["0"]          -> Join0
+  | "JOIN",    [chans]
+  | "JOIN",    [chans; _]     -> Join [Channel.from_string chans, None] (* FIXME !!! *)
   | _ -> assert false
 
 let to_low = function
@@ -117,15 +121,3 @@ let to_low = function
        "JOIN", [channels; keys]
      )
   | _ -> assert false
-
-class virtual ['prefix] handler = object (self)
-  method virtual on_pass : 'prefix -> string -> unit
-  method virtual on_privmsg : 'prefix -> Target.t -> string -> unit
-  method virtual on_notice : 'prefix -> Target.t -> string -> unit
-
-  method on_command prefix = function
-    | Pass password -> self#on_pass prefix password
-    | Privmsg (target, content) -> self#on_privmsg prefix target content
-    | Notice (target, content) -> self#on_notice prefix target content
-    | _ -> assert false
-end

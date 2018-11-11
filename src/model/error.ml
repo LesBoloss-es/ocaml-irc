@@ -77,11 +77,3 @@ let from_low command arguments =
 let to_low = function
   | NoSuchNick nick -> "401", [Nickname.to_string nick]
   | _ -> assert false
-
-class virtual ['prefix] handler = object (self)
-  method virtual on_nosuchnick : 'prefix -> Nickname.t -> unit
-
-  method on_error (prefix : 'prefix) = function
-    | NoSuchNick n -> self#on_nosuchnick prefix n
-    | _ -> assert false
-end

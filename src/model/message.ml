@@ -1,23 +1,7 @@
 let fpf = Format.fprintf
 
-(* =============================== [ Prefix ] =============================== *)
-
-type prefix =
-  | Servername of string
-  | Identity of Identity.t
-[@@deriving show]
-
-let pp_print_prefix_option ppf = function
-  | None -> ()
-  | Some (Servername s) ->
-     fpf ppf ":%s" s
-  | Some (Identity id) ->
-     fpf ppf ":%a" Identity.pp_print id
-
-(* ============================== [ Message ] =============================== *)
-
 type t =
-  { prefix : prefix option ;
+  { prefix : Prefix.t option ;
     suffix : Suffix.t }
 [@@deriving show]
 
@@ -29,7 +13,7 @@ let prefix message = message.prefix
 let suffix message = message.suffix
 
 let pp_print fmt message =
-  pp_print_prefix_option fmt message.prefix;
+  Prefix.pp_print_option fmt message.prefix;
   Format.pp_print_string fmt (Suffix.to_string message.suffix)
 
 let pp_print_endline fmt m =
@@ -60,7 +44,7 @@ let from_string str =
        NegLexing.next_char lb;
        let string = NegLexing.next_sep ' ' lb in
        Some
-         (try Identity (Identity.from_string string)
+         (try Prefix.Identity (Identity.from_string string)
           with Invalid_argument _ -> Servername string)
     | _ ->
        None
@@ -68,17 +52,3 @@ let from_string str =
 
   { prefix = prefix ;
     suffix = Suffix.from_neglexbuf lb }
-
-(* ============================== [ Handler ] =============================== *)
-
-class virtual handler = object (self)
-  inherit [prefix option] Command.handler
-  inherit [prefix option] Reply.handler
-  inherit [prefix option] Error.handler
-
-  method on_message message =
-    match message.suffix with
-    | Command command -> self#on_command message.prefix command
-    | Reply reply -> self#on_reply message.prefix reply
-    | Error error -> self#on_error message.prefix error
-end

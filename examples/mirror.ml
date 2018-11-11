@@ -9,7 +9,7 @@ let mirror conn = object (_self)
   inherit full conn params
 
   method! on_welcome _ _ _ =
-    Connection.send conn (Message.from_command (Command.Join [Channel.from_string "#abcdefgh",None]))
+    Connection.send_async conn (Helpers.join [Channel.from_string "#abcdefgh",None])
 
   method! on_privmsg prefix target content =
     let source =
@@ -28,7 +28,7 @@ let mirror conn = object (_self)
          Privmsg (Nickname source, content)
     )
     |> Message.from_command
-    |> Connection.send conn
+    |> Connection.send_async conn
 end
 
 let main () =

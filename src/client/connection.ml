@@ -12,22 +12,23 @@ let open_ ~address ~port =
   let%lwt (ichan, ochan) = Lwt_io.open_connection sockaddr in
   Lwt.return { sockaddr ; ichan ; ochan }
 
-let send_lwt conn message =
+let send conn message =
+  Log.(debug (spf "<< %s" (Message.show message))) >>= fun () ->
   let string = Message.to_string message in
-  Log.(debug_async (spf "<< %s" string));
+  Log.(debug (spf "<< %s" string)) >>= fun () ->
   Lwt_io.write conn.ochan (string ^ "\n") (* FIXME: newline? *)
 
-let send conn message =
-  Lwt.async (fun () -> send_lwt conn message)
+let send_async conn message =
+  Lwt.async (fun () -> send conn message)
 
-let receive conn =
+let rec receive conn =
   Lwt_io.read_line conn.ichan >>= fun string ->
-  Log.(debug_async (spf ">> %s" string));
-  let message = Message.from_string string in
-  Lwt.return message
-
-let send_nick conn nick =
-  send conn (Message.from_command (Command.Nick nick))
-
-let send_user conn user mode realname =
-  send conn (Message.from_command (Command.User (user, mode, realname)))
+  Log.(debug (spf ">> %s" string)) >>= fun () ->
+  try
+    let message = Message.from_string string in
+    Log.(debug (spf ">> %s" (Message.show message))) >>= fun () ->
+    Lwt.return message
+  with
+    Invalid_argument _ ->
+    Log.(warning (spf "Could not parse this message")) >>= fun () ->
+    receive conn
