@@ -81,11 +81,18 @@ let from_low command arguments =
   match command, arguments with
   | "PASS",    [password]     -> Pass password
   | "NICK",    [nick]         -> Nick (Nickname.from_string nick)
+  | "USER",    [user; mode; realname] -> User (user, mode_from_string mode, realname)
   | "PRIVMSG", [target; text] -> Privmsg (Target.from_string target, text)
   | "NOTICE",  [target; text] -> Notice (Target.from_string target, text)
   | "JOIN",    ["0"]          -> Join0
   | "JOIN",    [chans]
   | "JOIN",    [chans; _]     -> Join [Channel.from_string chans, None] (* FIXME !!! *)
+  | "PING",    [server1]      -> Ping (server1, None)
+  | "PING",    [server1; server2] -> Ping (server1, Some server2)
+  | "PONG",    [server1]      -> Pong (server1, None)
+  | "PONG",    [server1; server2] -> Pong (server1, Some server2)
+  | "QUIT",    [message]      -> Quit message
+  | "ERROR",   [message]      -> Error message
   | _ -> assert false
 
 let to_low = function
@@ -120,4 +127,10 @@ let to_low = function
        in
        "JOIN", [channels; keys]
      )
+  | Ping (server1, None) -> "PING", [server1]
+  | Ping (server1, Some server2) -> "PING", [server1; server2]
+  | Pong (server1, None) -> "PONG", [server1]
+  | Pong (server1, Some server2) -> "PONG", [server1; server2]
+  | Quit message -> "QUIT", [message]
+  | Error message -> "ERROR", [message]
   | _ -> assert false

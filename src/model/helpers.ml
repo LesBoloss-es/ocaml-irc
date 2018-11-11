@@ -9,12 +9,15 @@ class virtual handler = object (self)
   method virtual on_join : Prefix.t option -> (Channel.t * Channel.key option) list -> unit
   method virtual on_privmsg : Prefix.t option -> Target.t -> string -> unit
   method virtual on_notice : Prefix.t option -> Target.t -> string -> unit
+  method virtual on_ping : Prefix.t option -> string -> string option -> unit
+  method virtual on_pong : Prefix.t option -> string -> string option -> unit
 
   method on_command prefix = function
     | Pass password -> self#on_pass prefix password
     | Join chans -> self#on_join prefix chans
     | Privmsg (target, content) -> self#on_privmsg prefix target content
     | Notice (target, content) -> self#on_notice prefix target content
+    | Ping (server1, server2) -> self#on_ping prefix server1 server2
     | _ -> assert false
 
   method virtual on_welcome : Prefix.t option -> Nickname.t -> string -> unit

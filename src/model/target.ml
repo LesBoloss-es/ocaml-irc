@@ -18,4 +18,4 @@ let from_string s =
     All
   else
     try Nickname (Nickname.from_string s)
-    with Failure _ -> Channel (Channel.from_string s)
+    with Invalid_argument _ -> Channel (Channel.from_string s)

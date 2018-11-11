@@ -40,22 +40,27 @@ class dummy conn = object
   method on_join _ _ = ()
   method on_privmsg _ _g _ = ()
   method on_notice _ _ _ = ()
+  method on_ping _ _ _ = ()
+  method on_pong _ _ _ = ()
 
   method on_nosuchnick _ _ = ()
 end
 
 open Irc_model
 
-type params =
+type config =
   { nicks : string list ;
     user : string ;
     realname : string }
 
-class full conn params = object
+class generic conn config = object
   inherit dummy conn as super
 
+  method! on_ping _ server1 server2 =
+    Connection.send_async conn (Helpers.pong server1 server2)
+
   method! start () =
-    Connection.send conn (Helpers.nick (Nickname.from_string (List.hd params.nicks))) >>= fun () ->
-    Connection.send conn (Helpers.user params.user 0 params.realname) >>= fun () ->
+    Connection.send conn (Helpers.nick (Nickname.from_string (List.hd config.nicks))) >>= fun () ->
+    Connection.send conn (Helpers.user config.user 0 config.realname) >>= fun () ->
     super#start ()
 end
