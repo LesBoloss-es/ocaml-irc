@@ -1,4 +1,4 @@
-opam-version: "1.2"
+opam-version: "2.0"
 
 name: "ocaml-irc"
 version: "0.1"
@@ -14,8 +14,11 @@ depends: [
   "dune"             {build}
   "logs"
   "lwt"
+  "lwt_ppx"          {build}
+  "ocaml"            {build & >= "4.05"}
   "odoc"             {with-doc}
-  "ppx_inline_test"  {with-test}
+  "ppx_deriving"     {build}
+  "ppx_inline_test"  {build | with-test}
   "ppxfind"          {build}
 ]
 
