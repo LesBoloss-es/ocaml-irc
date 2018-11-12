@@ -54,5 +54,5 @@ class virtual handler = object (self)
     match message.suffix with
     | Command command -> self#on_command conn message.prefix command
     | Reply reply -> self#on_reply conn message.prefix reply
-    | Error error -> self#on_error conn message.prefix error
+    | Error_ error -> self#on_error conn message.prefix error
 end

@@ -65,15 +65,15 @@ type t =
 
   | UModeUnknownFlag                             [@repr "501"] [@optarg "Unknown MODE flag"]
   | UsersDontMatch                               [@repr "502"] [@optarg "Cannot change mode for other users"]
-[@@deriving show]
-
-exception Exception of t (*FIXME: remove*)
+[@@deriving show {with_path=false}]
 
 let from_low command arguments =
   match command, arguments with
-  | "401", [nick] -> NoSuchNick (Nickname.from_string nick)
-  | _ -> assert false
+  | "401", [nick] ->
+     Ok (NoSuchNick (Nickname.from_string nick))
+
+  | _ -> Error ()
 
 let to_low = function
-  | NoSuchNick nick -> "401", [Nickname.to_string nick]
+  | NoSuchNick nick -> ("401", [Nickname.to_string nick])
   | _ -> assert false

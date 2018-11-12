@@ -13,7 +13,9 @@ class virtual skeleton config = object (self)
 
   method loop conn : unit Lwt.t =
     let%lwt message = Conn.receive conn in
-    self#on_message conn message;
+    (match message with
+     | Ok message -> self#on_message conn message
+     | Error () -> ()); (* FIXME: better than that *)
     self#loop conn
 
   method start _conn =
@@ -24,11 +26,11 @@ class virtual skeleton config = object (self)
     self#start conn >>= fun () ->
     self#loop conn
 
-  method run_async conn : unit =
-    Lwt.async (fun () -> self#build conn)
+  method run_async () : unit =
+    Lwt.async (fun () -> self#build ())
 
-  method run conn : unit =
-    Lwt_main.run (self#build conn)
+  method run () : unit =
+    Lwt_main.run (self#build ())
 end
 
 open Irc_model

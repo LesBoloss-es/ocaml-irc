@@ -75,33 +75,64 @@ type t =
   | Ping of server * server option
   | Pong of server * server option
   | Error of string
-[@@deriving show]
+[@@deriving show {with_path=false}]
 
 let from_low command arguments =
   match command, arguments with
-  | "PASS",    [password]     -> Pass password
-  | "NICK",    [nick]         -> Nick (Nickname.from_string nick)
-  | "USER",    [user; mode; realname] -> User (user, mode_from_string mode, realname)
-  | "PRIVMSG", [target; text] -> Privmsg (Target.from_string target, text)
-  | "NOTICE",  [target; text] -> Notice (Target.from_string target, text)
-  | "JOIN",    ["0"]          -> Join0
+  | "PASS",    [password]     ->
+     Ok (Pass password)
+
+  | "NICK",    [nick]         ->
+     Ok (Nick (Nickname.from_string nick))
+
+  | "USER",    [user; mode; realname] ->
+     Ok (User (user, mode_from_string mode, realname))
+
+  | "PRIVMSG", [target; text] ->
+     Ok (Privmsg (Target.from_string target, text))
+
+  | "NOTICE",  [target; text] ->
+     Ok (Notice (Target.from_string target, text))
+
+  | "JOIN",    ["0"]          -> Ok Join0
   | "JOIN",    [chans]
-  | "JOIN",    [chans; _]     -> Join [Channel.from_string chans, None] (* FIXME !!! *)
-  | "PING",    [server1]      -> Ping (server1, None)
-  | "PING",    [server1; server2] -> Ping (server1, Some server2)
-  | "PONG",    [server1]      -> Pong (server1, None)
-  | "PONG",    [server1; server2] -> Pong (server1, Some server2)
-  | "QUIT",    [message]      -> Quit message
-  | "ERROR",   [message]      -> Error message
-  | _ -> assert false
+  | "JOIN",    [chans; _]     ->
+     Ok (Join [Channel.from_string chans, None]) (* FIXME !!! *)
+
+  | "PING",    [server1]      ->
+     Ok (Ping (server1, None))
+  | "PING",    [server1; server2] ->
+     Ok (Ping (server1, Some server2))
+
+  | "PONG",    [server1]      ->
+     Ok (Pong (server1, None))
+  | "PONG",    [server1; server2] ->
+     Ok (Pong (server1, Some server2))
+
+  | "QUIT",    [message]      ->
+     Ok (Quit message)
+  | "ERROR",   [message]      ->
+     Ok (Error message)
+
+  | _ -> Error ()
 
 let to_low = function
-  | Pass password               -> "PASS",    [password]
-  | Nick nick                   -> "NICK",    [Nickname.to_string nick]
-  | User (user, mode, realname) -> "USER",    [user; mode_to_string mode; "*"; realname]
-  | Privmsg (target, content)   -> "PRIVMSG", [Target.to_string target; content]
-  | Notice (target, content)    -> "NOTICE",  [Target.to_string target; content]
-  | Join channels               ->
+  | Pass password ->
+     ("PASS", [password])
+
+  | Nick nick ->
+     ("NICK", [Nickname.to_string nick])
+
+  | User (user, mode, realname) ->
+     ("USER", [user; mode_to_string mode; "*"; realname])
+
+  | Privmsg (target, content) ->
+     ("PRIVMSG", [Target.to_string target; content])
+
+  | Notice (target, content) ->
+     ("NOTICE", [Target.to_string target; content])
+
+  | Join channels ->
      (
        let channels, keys =
          channels
@@ -125,12 +156,23 @@ let to_low = function
          |> List.map Channel.key_to_string
          |> String.concat ","
        in
-       "JOIN", [channels; keys]
+       ("JOIN", [channels; keys])
      )
-  | Ping (server1, None) -> "PING", [server1]
-  | Ping (server1, Some server2) -> "PING", [server1; server2]
-  | Pong (server1, None) -> "PONG", [server1]
-  | Pong (server1, Some server2) -> "PONG", [server1; server2]
-  | Quit message -> "QUIT", [message]
-  | Error message -> "ERROR", [message]
+
+  | Ping (server1, None) ->
+     ("PING", [server1])
+  | Ping (server1, Some server2) ->
+     ("PING", [server1; server2])
+
+  | Pong (server1, None) ->
+     ("PONG", [server1])
+  | Pong (server1, Some server2) ->
+     ("PONG", [server1; server2])
+
+  | Quit message ->
+     ("QUIT", [message])
+
+  | Error message ->
+     ("ERROR", [message])
+
   | _ -> assert false

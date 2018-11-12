@@ -114,20 +114,36 @@ type t =
   | TraceLink
   | TraceServer
   | StatsOline
-[@@deriving show]
+[@@deriving show {with_path=false}]
 
 let from_low command arguments =
   match command, arguments with
-  | "001", [nick; text] -> Welcome (Nickname.from_string nick, text)
-  | "002", [nick; text] -> Yourhost (Nickname.from_string nick, text)
-  | "003", [nick; text] -> Created (Nickname.from_string nick, text)
-  | "004", [nick; servername; version; usermodes; channelmodes] -> Myinfo (Nickname.from_string nick, servername, version, usermodes, channelmodes)
-  | "005", [nick; text] -> Bounce (Nickname.from_string nick, text)
-  | "372", [nick; text] -> Motd (Nickname.from_string nick, text)
-  | "375", [nick; text] -> MotdStart (Nickname.from_string nick, text)
-  | "376", [nick; text] -> EndOfMotd (Nickname.from_string nick, text)
-  | _ -> assert false
+  | "001", [nick; text] ->
+     Ok (Welcome (Nickname.from_string nick, text))
+
+  | "002", [nick; text] ->
+     Ok (Yourhost (Nickname.from_string nick, text))
+
+  | "003", [nick; text] ->
+     Ok (Created (Nickname.from_string nick, text))
+
+  | "004", [nick; servername; version; usermodes; channelmodes] ->
+     Ok (Myinfo (Nickname.from_string nick, servername, version, usermodes, channelmodes))
+
+  | "005", [nick; text] ->
+     Ok (Bounce (Nickname.from_string nick, text))
+
+  | "372", [nick; text] ->
+     Ok (Motd (Nickname.from_string nick, text))
+
+  | "375", [nick; text] ->
+     Ok (MotdStart (Nickname.from_string nick, text))
+
+  | "376", [nick; text] ->
+     Ok (EndOfMotd (Nickname.from_string nick, text))
+
+  | _ -> Error ()
 
 let to_low = function
-  | Welcome (nick, text) -> "001", [Nickname.to_string nick; text]
+  | Welcome (nick, text) -> ("001", [Nickname.to_string nick; text])
   | _ -> assert false

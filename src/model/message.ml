@@ -1,9 +1,11 @@
+open Irc_common
+
 let fpf = Format.fprintf
 
 type t =
   { prefix : Prefix.t option ;
     suffix : Suffix.t }
-[@@deriving show]
+[@@deriving show {with_path=false}]
 
 let make ?prefix ~suffix () = { prefix ; suffix }
 
@@ -35,20 +37,8 @@ let to_string_endline m =
   Buffer.contents buf
 
 let from_string str =
+  let open Result in
   let lb = NegLexing.from_string str in
-
-  (* get prefix if there is one *)
-  let prefix =
-    match NegLexing.peek_char lb with
-    | ':' ->
-       NegLexing.next_char lb;
-       let string = NegLexing.next_sep ' ' lb in
-       Some
-         (try Prefix.Identity (Identity.from_string string)
-          with Invalid_argument _ -> Servername string)
-    | _ ->
-       None
-  in
-
-  { prefix = prefix ;
-    suffix = Suffix.from_neglexbuf lb }
+  let prefix = Prefix.from_neglexbuf lb in
+  Suffix.from_neglexbuf lb >>= fun suffix ->
+  Ok { prefix ; suffix }

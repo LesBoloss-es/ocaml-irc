@@ -1,8 +1,10 @@
+open Irc_common
+
 type t =
   | Command of Command.t
   | Reply of Reply.t
-  | Error of Error.t
-[@@deriving show]
+  | Error_ of Error.t
+[@@deriving show {with_path=false}]
 
 let from_neglexbuf lb =
   (* get command; there must be one *)
@@ -42,26 +44,25 @@ let from_neglexbuf lb =
     List.rev (find_params [])
   in
   (* parse *)
-  try Command (Command.from_low command params)
-  with Assert_failure _ ->
-        try Reply (Reply.from_low command params)
-        with Assert_failure _ ->
-              try Error (Error.from_low command params)
-              with Assert_failure _ ->
-                    raise (Invalid_argument "Suffix.fromneglexbuf")
+  Result.(
+    first_success
+      [ (fun () -> Command.from_low command params >>= fun command -> Ok (Command command)) ;
+        (fun () -> Reply.from_low command params >>= fun reply -> Ok (Reply reply)) ;
+        (fun () -> Error.from_low command params >>= fun error -> Ok (Error_ error)) ]
+  )
 
 let to_string suffix =
-  let (command, arguments) =
-    match suffix with
-    | Command command -> Command.to_low command
-    | Reply reply -> Reply.to_low reply
-    | Error error -> Error.to_low error
-  in
   let rec arguments_to_string = function
     | [] -> ""
     | [e] -> " :" ^ e
     | h :: t ->
        assert (not (String.contains h ' '));
        " " ^ h ^ arguments_to_string t
+  in
+  let (command, arguments) =
+    match suffix with
+    | Command command -> Command.to_low command
+    | Reply reply -> Reply.to_low reply
+    | Error_ error -> Error.to_low error
   in
   command ^ arguments_to_string arguments
