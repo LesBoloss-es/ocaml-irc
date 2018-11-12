@@ -5,6 +5,9 @@ type t =
     ichan : Lwt_io.input_channel ;
     ochan : Lwt_io.output_channel }
 
+let make ~sockaddr ~ichan ~ochan =
+  { sockaddr ; ichan ; ochan }
+
 let open_ ~address ~port =
   let sockaddr =
     Unix.(ADDR_INET (inet_addr_of_string address, port))

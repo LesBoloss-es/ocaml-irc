@@ -1,4 +1,5 @@
 (library
  (name irc)
  (public_name irc)
- (libraries irc.model irc.client))
+ (libraries irc.common irc.model irc.helpers)
+ (preprocess (pps lwt_ppx)))
