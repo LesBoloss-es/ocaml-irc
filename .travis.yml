@@ -12,4 +12,4 @@ env:
   - TAG=4.07
 
 script:
-  - docker build --build-arg TAG=$TAG --build-arg SWITCH=$SWITCH --tag lesboloss-es/ocaml-irc:$TRAVIS_BRANCH .
+  - docker build --build-arg TAG=$TAG --build-arg SWITCH=$SWITCH --tag lesbolosses/ocaml-irc:$TRAVIS_BRANCH .
