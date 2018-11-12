@@ -1,0 +1,15 @@
+language: c
+sudo: required
+services:
+  - docker
+
+env:
+  - TAG=4.02
+  - TAG=4.03
+  - TAG=4.04
+  - TAG=4.05
+  - TAG=4.06
+  - TAG=4.07
+
+script:
+  - docker build --build-arg TAG=$TAG --build-arg SWITCH=$SWITCH --tag lesboloss-es/ocaml-irc:$TRAVIS_BRANCH .

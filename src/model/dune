@@ -1,6 +1,6 @@
 (library
  (name irc_model)
- (public_name irc.model)
+ (public_name ocaml-irc.model)
  (inline_tests)
- (libraries irc.common)
+ (libraries ocaml-irc.common)
  (preprocess (pps ppx_deriving.std)))

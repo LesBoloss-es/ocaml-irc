@@ -1,0 +1,22 @@
+opam-version: "1.2"
+
+name: "ocaml-irc"
+version: "0.1"
+
+authors: "Niols <niols@niols.fr>"
+maintainer: "Niols <niols@niols.fr>"
+
+homepage: "https://github.com/LesBoloss-es/ocaml-irc"
+bug-reports: "https://github.com/LesBoloss-es/ocaml-irc/issues"
+dev-repo: "git://github.com/LesBoloss-es/ocaml-irc.git"
+
+depends: [
+  "dune"             {build}
+  "logs"
+  "lwt"
+  "odoc"             {with-doc}
+  "ppx_inline_test"  {with-test}
+  "ppxfind"          {build}
+]
+
+build: ["dune" "build" "-p" name "-j" jobs]

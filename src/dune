@@ -1,5 +1,5 @@
 (library
  (name irc)
- (public_name irc)
- (libraries irc.common irc.model irc.helpers)
+ (public_name ocaml-irc)
+ (libraries ocaml-irc.common ocaml-irc.model ocaml-irc.helpers)
  (preprocess (pps lwt_ppx)))

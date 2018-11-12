@@ -4,5 +4,5 @@
 
 (executable
  (name mirror)
- (libraries irc)
+ (libraries ocaml-irc)
  (preprocess (pps lwt_ppx)))
