@@ -1,35 +1,39 @@
-open Irc.Common open Irc.Model
-module Conn = Irc.Helpers.Connection
-open Irc.Helpers.Command
+module Events (Config : Irc.Client.Config) = struct
+  include Irc.Client.GenericEvents (Config)
 
-let mirror config = object (_self)
-  inherit Irc.Client.generic config
+  open Irc.Common
+  open Irc.Model
+  open Irc.Helpers.Command
+  module Conn = Irc.Helpers.Connection
 
-  method! on_welcome conn _ _ _ =
+  let on_welcome conn _ _ _ =
     Conn.send_async conn (join [Channel.from_string "#abcdefgh", None])
 
-  method! on_privmsg conn prefix target content =
+  let on_privmsg conn prefix target content =
     let source =
       match unwrap prefix with
-      | Identity identity -> Identity.nick identity
+      | Prefix.Identity identity -> Identity.nick identity
       | _ -> assert false
     in
     (
       match target with
-      | All -> assert false
-      | Channel channel -> privmsg (Channel channel) content
-      | Nickname _ -> privmsg (Nickname source) content
+      | Target.All -> assert false
+      | Target.Channel channel -> privmsg (Channel channel) content
+      | Target.Nickname _ -> privmsg (Nickname source) content
     )
     |> Conn.send_async conn
 end
 
-let config =
-  Irc.Client.{
-      nicks = ["mirror"; "fallback_nickname"] ;
-      user = "mexample" ;
-      realname = "Mirror Example" ;
-      address = "104.200.152.162" ; (* freenode *)
-      port = 6667
-  }
+let () =
+  let module Config =
+    struct
+      let nicks = ["mirror"; "fallback_nickname"]
+      let user = "mexample"
+      let realname = "Mirror Example"
 
-let () = Lwt_main.run ((mirror config) # build ())
+      let address = "104.200.152.162" (* freenode *)
+      let port = 6667
+    end
+  in
+  let module Mirror = Irc.Client.FromEvents(Config)(Events(Config)) in
+  Mirror.run ()
