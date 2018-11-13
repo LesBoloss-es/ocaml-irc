@@ -57,6 +57,8 @@ module GenericEvents (C : Config) : Irc_helpers.Handler.Events = struct
   let on_endofmotd _ _ _ _ = ()
 
   let on_pass _ _ _ = ()
+  let on_nick _ _ _ = ()
+  let on_user _ _ _ _ _ = ()
   let on_join _ _ _ = ()
   let on_privmsg _ _ _ _ = ()
   let on_notice _ _ _ _ = ()

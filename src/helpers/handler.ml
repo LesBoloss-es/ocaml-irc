@@ -12,6 +12,9 @@ module type Events = sig
   val on_connection : conn -> unit
 
   val on_pass : conn -> prefix -> string -> unit
+  val on_nick : conn -> prefix -> Nickname.t -> unit
+  val on_user : conn -> prefix -> user -> mode -> string -> unit
+
   val on_join : conn -> prefix -> (Channel.t * Channel.key option) list -> unit
   val on_privmsg : conn -> prefix -> Target.t -> string -> unit
   val on_notice : conn -> prefix -> Target.t -> string -> unit
@@ -40,6 +43,8 @@ module Make (E : Events) : Handler = struct
 
   let on_command conn prefix = function
     | Pass password -> E.on_pass conn prefix password
+    | Nick nick -> E.on_nick conn prefix nick
+    | User (user, mode, realname) -> E.on_user conn prefix user mode realname
     | Join chans -> E.on_join conn prefix chans
     | Privmsg (target, content) -> E.on_privmsg conn prefix target content
     | Notice (target, content) -> E.on_notice conn prefix target content

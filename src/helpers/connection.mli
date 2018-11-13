@@ -11,4 +11,10 @@ val send_async : t -> Irc_model.Message.t -> unit
 val receive : t -> (Irc_model.Message.t, unit) result Lwt.t
 val receive_stream : t -> (Irc_model.Message.t, unit) result Lwt_stream.t
 
-module Table : Hashtbl.S with type key = t
+val equal : t -> t -> bool
+
+module Table : sig
+  include Hashtbl.S with type key = t
+
+  val to_list : 'a t -> (key * 'a) list
+end

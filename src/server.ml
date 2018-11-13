@@ -39,14 +39,30 @@ module Make (C : Config) (H : Irc_helpers.Handler.Handler) : S = struct
     Lwt_main.run (build ())
 end
 
-(* open Irc_model
- * open Irc_helpers.Command *)
+open Irc_model
+open Irc_helpers.Command
+open Irc_helpers.Error
+
+type client_data =
+  { mutable identity : Identity.t ;
+    mutable realname : string option ;
+    mutable channels : Channel.t list }
 
 module GenericEvents (C : Config) : Irc_helpers.Handler.Events = struct
   let clients = Conn.Table.create 8
 
-  let on_connection conn =
-    Conn.Table.add clients conn ()
+  let with_client_data client fun_ =
+    try
+      let data = Conn.Table.find clients client in
+      fun_ data
+    with
+      Not_found -> () (* FIXME *)
+
+  let on_connection client =
+    Conn.Table.add clients client
+      { identity = Identity.empty ;
+        realname = None ;
+        channels = [] }
 
   let on_welcome _ _ _ _ = ()
   let on_yourhost _ _ _ _ = ()
@@ -60,10 +76,57 @@ module GenericEvents (C : Config) : Irc_helpers.Handler.Events = struct
 
   let on_pass _ _ _ = ()
   let on_join _ _ _ = ()
-  let on_privmsg _ _ _ _ = ()
   let on_notice _ _ _ _ = ()
   let on_ping _ _ _ _ = ()
   let on_pong _ _ _ _ = ()
 
   let on_nosuchnick _ _ _ = ()
+
+  let on_user client _ username _ realname =
+    with_client_data client @@ fun data ->
+    data.identity <- Identity.set_user data.identity username;
+    data.realname <- Some realname
+
+  let on_nick client _ nick =
+    with_client_data client @@ fun data ->
+    let nickinuse =
+      Conn.Table.to_list clients
+      |> List.exists
+           (fun (_, data) ->
+             Identity.nick_opt data.identity = Some nick)
+    in
+    if nickinuse then
+      Conn.send_async client (nicknameinuse nick)
+    else
+      data.identity <- Identity.set_nick data.identity nick
+
+  let on_privmsg client _ target content =
+    with_client_data client @@ fun data ->
+    let msg = privmsg ~prefix:(Identity data.identity) target content in
+    match target with
+    | Target.All -> () (* FIXME *)
+    | Target.Channel tchan ->
+       (
+         Conn.Table.to_list clients
+         |> List.filter
+              (fun (oclient, odata) ->
+                not (Conn.equal oclient client)
+                && List.mem tchan odata.channels)
+         |> List.iter
+              (fun (tclient, _) ->
+                Conn.send_async tclient msg)
+       )
+    | Target.Nickname tnick ->
+       (
+         try
+           let (tclient, _) =
+             Conn.Table.to_list clients
+             |> List.find
+                  (fun (_, odata) ->
+                    Identity.nick_opt odata.identity = Some tnick)
+           in
+           Conn.send_async tclient msg
+         with
+           Not_found -> Conn.send_async client (nosuchnick tnick)
+       )
 end

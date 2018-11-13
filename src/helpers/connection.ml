@@ -37,15 +37,22 @@ let receive_stream conn =
   Lwt_io.read_lines conn.ichan
   |> Lwt_stream.map_s message_from_string
 
+let equal c1 c2 =
+  c1.sockaddr = c2.sockaddr
+
 module HashedSelf = struct
   type s = t
   type t = s
 
-  let equal c1 c2 =
-    c1.sockaddr = c2.sockaddr
+  let equal = equal
 
   let hash c =
     Hashtbl.hash c
 end
 
-module Table = Hashtbl.Make(HashedSelf)
+module Table = struct
+  include Hashtbl.Make(HashedSelf)
+
+  let to_list table =
+    fold (fun k v l -> (k, v) :: l) table []
+end

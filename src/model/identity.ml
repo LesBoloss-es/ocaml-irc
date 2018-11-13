@@ -6,6 +6,8 @@ type t =
     host : string option }
 [@@deriving show]
 
+let empty = { nick = None ; user = None ; host = None }
+
 let nick_opt id = id.nick
 let nick id = unwrap (nick_opt id)
 

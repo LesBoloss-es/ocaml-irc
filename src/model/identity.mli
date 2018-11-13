@@ -1,5 +1,7 @@
 type t
 
+val empty : t
+
 val nick : t -> Nickname.t
 val nick_opt : t -> Nickname.t option
 
