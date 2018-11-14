@@ -1,8 +1,14 @@
 open Irc_common open Irc_model
 
-type t = Lwt_unix.file_descr
+type t =
+  { socket : Lwt_unix.file_descr ;
+    ichan : Lwt_io.input_channel ;
+    ochan : Lwt_io.output_channel }
 
-let make ~socket = socket
+let make ~socket =
+  { socket ;
+    ichan = Lwt_io.of_fd ~mode:Input socket ;
+    ochan = Lwt_io.of_fd ~mode:Output socket }
 
 let open_ ~address ~port =
   let sockaddr =
@@ -21,21 +27,19 @@ let open_ ~address ~port =
     Lwt_unix.close socket >>= fun () ->
     Lwt.fail exn
 
-let sockaddr conn =
-  Lwt_unix.getpeername conn
+let sockaddr conn = Lwt_unix.getpeername conn.socket
+let ichan conn = conn.ichan
+let ochan conn = conn.ochan
 
 let host conn =
   match sockaddr conn with
   | Unix.ADDR_UNIX _ -> assert false
   | Unix.ADDR_INET (addr, _) -> Unix.string_of_inet_addr addr
 
-let equal = (==)
-let hash fd =
+let equal conn1 conn2 = conn1.socket == conn2.socket
+let hash conn =
   (* Do not ever hash Lwt_unix.file_descr! *)
-  Hashtbl.hash (Lwt_unix.unix_file_descr fd)
-
-let ochan = Lwt_io.of_fd ~mode:Output
-let ichan = Lwt_io.of_fd ~mode:Input
+  Hashtbl.hash (Lwt_unix.unix_file_descr conn.socket)
 
 let send conn message =
   Log.(debug (spf "<< %s" (Message.show message))) >>= fun () ->
