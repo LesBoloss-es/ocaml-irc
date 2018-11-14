@@ -85,7 +85,7 @@ let from_low command arguments =
   | "NICK",    [nick]         ->
      Ok (Nick (Nickname.from_string nick))
 
-  | "USER",    [user; mode; realname] ->
+  | "USER",    [user; mode; _; realname] ->
      Ok (User (user, mode_from_string mode, realname))
 
   | "PRIVMSG", [target; text] ->

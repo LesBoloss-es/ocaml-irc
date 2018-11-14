@@ -8,9 +8,9 @@ type t =
 let pp_print_option ppf = function
   | None -> ()
   | Some (Servername s) ->
-     fpf ppf ":%s" s
+     fpf ppf ":%s " s
   | Some (Identity id) ->
-     fpf ppf ":%a" Identity.pp_print id
+     fpf ppf ":%a " Identity.pp_print id
 
 let from_neglexbuf lb =
   match NegLexing.peek_char lb with

@@ -2,9 +2,9 @@ let (||>) f g x = f x |> g
 
 type t =
   | Welcome of Nickname.t * string
-  | Yourhost of Nickname.t * string
+  | YourHost of Nickname.t * string
   | Created of Nickname.t * string
-  | Myinfo of Nickname.t * string * string * string * string
+  | MyInfo of Nickname.t * string * string * string * string
   | Bounce of Nickname.t * string
 
   | TraceConnecting of string * string                                [@repr "201"]
@@ -122,13 +122,13 @@ let from_low command arguments =
      Ok (Welcome (Nickname.from_string nick, text))
 
   | "002", [nick; text] ->
-     Ok (Yourhost (Nickname.from_string nick, text))
+     Ok (YourHost (Nickname.from_string nick, text))
 
   | "003", [nick; text] ->
      Ok (Created (Nickname.from_string nick, text))
 
   | "004", [nick; servername; version; usermodes; channelmodes] ->
-     Ok (Myinfo (Nickname.from_string nick, servername, version, usermodes, channelmodes))
+     Ok (MyInfo (Nickname.from_string nick, servername, version, usermodes, channelmodes))
 
   | "005", [nick; text] ->
      Ok (Bounce (Nickname.from_string nick, text))
@@ -146,4 +146,7 @@ let from_low command arguments =
 
 let to_low = function
   | Welcome (nick, text) -> ("001", [Nickname.to_string nick; text])
+  | YourHost (nick, text) -> ("002", [Nickname.to_string nick; text])
+  | Created (nick, text) -> ("003", [Nickname.to_string nick; text])
+  | MyInfo (nick, servername, version, user_modes, channel_modes) -> ("004", [Nickname.to_string nick; servername; version; user_modes; channel_modes])
   | _ -> assert false

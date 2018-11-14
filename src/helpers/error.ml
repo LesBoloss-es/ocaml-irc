@@ -7,5 +7,8 @@ let from_error ?prefix error =
 let nosuchnick ?prefix nick =
   from_error ?prefix (NoSuchNick nick)
 
-let nicknameinuse ?prefix nick =
-  from_error ?prefix (NicknameInUse nick)
+let nicknameinuse ?prefix ?(text="Nickname is already in use") nick =
+  from_error ?prefix (NicknameInUse (nick, text))
+
+let badchannelkey ?prefix ?(text="Cannot join channel (+k)") chan =
+  from_error ?prefix (BadChannelKey (chan, text))

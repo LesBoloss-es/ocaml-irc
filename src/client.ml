@@ -16,6 +16,7 @@ module type S = sig
 end
 
 module FromHandler (C : Config) (H : Irc_helpers.Handler.Handler) : S = struct
+
   let rec loop conn : unit Lwt.t =
     let%lwt message = Conn.receive conn in
     (match message with
@@ -60,6 +61,8 @@ module GenericEvents (C : Config) : Irc_helpers.Handler.Events = struct
   let on_nick _ _ _ = ()
   let on_user _ _ _ _ _ = ()
   let on_join _ _ _ = ()
+  let on_join0 _ _ = ()
+  let on_part _ _ _ _ = ()
   let on_privmsg _ _ _ _ = ()
   let on_notice _ _ _ _ = ()
 
@@ -69,6 +72,8 @@ module GenericEvents (C : Config) : Irc_helpers.Handler.Events = struct
   let on_pong _ _ _ _ = ()
 
   let on_nosuchnick _ _ _ = ()
+
+  let on_quit _ _ _ = ()
 end
 
 module GenericClient (C : Config) = FromEvents(C)(GenericEvents(C))

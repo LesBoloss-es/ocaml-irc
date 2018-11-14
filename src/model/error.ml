@@ -24,7 +24,7 @@ type t =
 
   | NoNicknameGiven                              [@repr "431"] [@optarg "No nickname given"]
   | ErroneousNickname of string                  [@repr "432"] [@optarg "Erroneous nickname"]
-  | NicknameInUse of Nickname.t                  [@repr "433"] [@optarg "Nickname is already in use"]
+  | NicknameInUse of Nickname.t * string
 
   | NickCollision of string * string * string    [@repr "436"] (*FIXME*)
   | UnavailResource of string                    [@repr "437"] [@optarg "Nick/channel is temporarily unavailable"]
@@ -50,7 +50,7 @@ type t =
   | UnknownMode of char * Channel.t              [@repr "472"] (*FIXME*)
   | InviteOnlyChan of Channel.t                  [@repr "473"] [@optarg "Cannot join channel (+i)"]
   | BannedFromChan of Channel.t                  [@repr "474"] [@optarg "Cannot join channel (+b)"]
-  | BadChannelKey of Channel.t                   [@repr "475"] [@optarg "Cannot join channel (+k)"]
+  | BadChannelKey of Channel.t * string
   | BadChanMask of Channel.t                     [@repr "476"] [@optarg "Bad channel mask"]
   | NoChanModes of Channel.t                     [@repr "477"] [@optarg "Channel doesn't support modes"]
   | BanListFull of Channel.t * char              [@repr "478"] [@optarg "Channel list is full"]
@@ -71,9 +71,14 @@ let from_low command arguments =
   match command, arguments with
   | "401", [nick] ->
      Ok (NoSuchNick (Nickname.from_string nick))
-
+  | "433", [nick; text] ->
+     Ok (NicknameInUse (Nickname.from_string nick, text))
+  | "475", [chan; text] ->
+     Ok (BadChannelKey (Channel.from_string chan, text))
   | _ -> Error ()
 
 let to_low = function
   | NoSuchNick nick -> ("401", [Nickname.to_string nick])
+  | NicknameInUse (nick, text) -> ("433", [Nickname.to_string nick; text])
+  | BadChannelKey (chan, text) -> ("475", [Channel.to_string chan; text])
   | _ -> assert false

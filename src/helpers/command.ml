@@ -33,7 +33,7 @@ let join ?prefix chans =
 let join0 ?prefix () =
   from_command ?prefix Join0
 
-let part ?prefix chans reason =
+let part ?prefix ?(reason="ocaml-irc %%VERSION%%") chans =
   from_command ?prefix (Part (chans, reason))
 
 let cmode ?prefix chan modes =

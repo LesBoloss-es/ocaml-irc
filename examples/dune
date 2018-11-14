@@ -1,8 +1,14 @@
 (alias
  (name examples)
- (deps mirror.exe))
+ (deps mirror.exe server.exe))
 
 (executable
  (name mirror)
  (libraries ocaml-irc)
- (preprocess (pps lwt_ppx)))
+ (preprocess (pps lwt_ppx))
+ (modules mirror))
+
+(executable
+ (name server)
+ (libraries ocaml-irc lwt.unix)
+ (modules server))
