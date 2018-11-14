@@ -3,6 +3,12 @@ opam-version: "2.0"
 name: "ocaml-irc"
 version: "0.1"
 
+synopsis: "IRC Library"
+description: """
+IRC Library for OCaml allowing to write both
+ IRC client and server applications.
+"""
+
 authors: "Niols <niols@niols.fr>"
 maintainer: "Niols <niols@niols.fr>"
 
